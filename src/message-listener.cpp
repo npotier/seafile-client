@@ -196,7 +196,7 @@ void MessageListener::handleMessage(CcnetMessage *message)
             seafApplet->trayIcon()->notify(getBrand(), buf);
         }
     }
-#ifdef __APPLE__
+#if defined(Q_OS_MAC)
     else if (strcmp(type, "repo.setwktree") == 0) {
         //seafile_set_repofolder_icns (content);
     } else if  (strcmp(type, "repo.unsetwktree") == 0) {
