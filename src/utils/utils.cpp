@@ -1,7 +1,7 @@
-
 #include <cassert>
 #include <errno.h>
 #include <dirent.h>
+#include <string>
 #include <cstdio>
 #include <cstdlib>
 #include <unistd.h>
@@ -9,7 +9,6 @@
 #include <glib.h>
 #include <cstring>
 #include <QString>
-#include <string>
 #include <jansson.h>
 
 #if defined(Q_WS_MAC)
@@ -51,6 +50,26 @@ QString defaultCcnetDir() {
     } else {
         return QDir::home().filePath(kCcnetConfDir);
     }
+}
+
+QString defaultFileCachePath(bool create_if_not_exist) {
+    const QDir &ccnet_dir = defaultCcnetDir();
+    const QString &path = ccnet_dir.absoluteFilePath("file-cache");
+    if (create_if_not_exist && !QDir(path).exists()) {
+        bool result = ccnet_dir.mkdir("file-cache");
+        assert(result);
+    }
+    return path;
+}
+
+QString defaultDownloadsPath() {
+#if defined(Q_WS_X11)
+    return QDir::home().absoluteFilePath("Downloads");
+#elif defined(Q_WS_MAC)
+    return QDir::home().absoluteFilePath("Downloads");
+#elif defined(Q_WS_WIN)
+    return QDir::home().absoluteFilePath("Downloads");
+#endif
 }
 
 typedef bool (*SqliteRowFunc) (sqlite3_stmt *stmt, void *data);
