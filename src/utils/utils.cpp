@@ -62,16 +62,6 @@ QString defaultFileCachePath(bool create_if_not_exist) {
     return path;
 }
 
-QString defaultDownloadsPath() {
-#if defined(Q_WS_X11)
-    return QDir::home().absoluteFilePath("Downloads");
-#elif defined(Q_WS_MAC)
-    return QDir::home().absoluteFilePath("Downloads");
-#elif defined(Q_WS_WIN)
-    return QDir::home().absoluteFilePath("Downloads");
-#endif
-}
-
 typedef bool (*SqliteRowFunc) (sqlite3_stmt *stmt, void *data);
 
 sqlite3_stmt *
