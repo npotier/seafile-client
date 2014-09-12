@@ -24,6 +24,9 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     setGridStyle(Qt::NoPen);
     setShowGrid(false);
 
+    setContentsMargins(0, 0, 0, 0);
+    setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
     connect(this, SIGNAL(doubleClicked(const QModelIndex&)),
             this, SLOT(onItemDoubleClicked(const QModelIndex&)));
 
