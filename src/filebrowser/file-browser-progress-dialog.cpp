@@ -43,6 +43,11 @@ void FileBrowserProgressDialog::onFinished(const QString &file_path)
     disconnect(task_, 0, this, 0);
     setLabelText(labelText().append("finished"));
     setValue(maximum());
-    QDesktopServices::openUrl(QUrl::fromLocalFile(file_path));
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(file_path)) &&
+        !QDesktopServices::openUrl( \
+            QUrl::fromLocalFile(QFileInfo(file_path).dir().absolutePath())))
+        qDebug() << Q_FUNC_INFO << file_path
+          << " is downloaded but unable to open via openUrl";
+
     reset();
 }
