@@ -86,7 +86,24 @@ void SeafileDownloadTask::onRun()
     }
     file_ = new QFile(dir.filePath(file_name_));
     if (file_->exists()) {
-        qDebug() << "[download task]" << (download_location_ + file_name_) << "exists";
+        qDebug() << "[download task]" << (download_location_ + file_name_)
+          << "exists";
+        QFileInfo file_info(file_name_);
+        QString alternative_file_path(download_location_ + file_info.baseName()
+                                      + " (%1)." + file_info.completeSuffix());
+        int i;
+        for (i = 1; i != 10; i++) {
+            file_->setFileName(alternative_file_path.arg(i));
+            if (!file_->exists())
+                break;
+        }
+        if (i == 10) {
+            qDebug() << "[download task]"
+              << (download_location_ + file_name_)
+              << "unable to find an alternative file name";
+            onAborted(SEAFILE_NETWORK_TASK_FILE_ERROR);
+            return;
+        }
     }
     if (!file_->open(QIODevice::WriteOnly)) {
         qDebug() << "[download task]" << (download_location_ + file_name_) << "is unable to open";

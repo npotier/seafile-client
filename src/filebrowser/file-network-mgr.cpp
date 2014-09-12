@@ -8,12 +8,13 @@
 #include "network/task.h"
 
 FileNetworkManager::FileNetworkManager(const Account &account)
-    : file_cache_dir_(defaultFileCachePath(true))
+    : file_cache_dir_(defaultDownloadsPath()),
+    file_cache_path_(defaultDownloadsPath())
 {
+    if (!file_cache_path_.endsWith("/"))
+        file_cache_path_.append('/');
     account_ = account;
     worker_thread_ = new QThread;
-    // omg here is a ghost story
-    assert(file_cache_dir_.exists());
 }
 
 FileNetworkManager::~FileNetworkManager()
@@ -33,20 +34,15 @@ FileNetworkManager::~FileNetworkManager()
 int FileNetworkManager::createDownloadTask(const QString &repo_id,
                                            const QString &path,
                                            const QString &file_name) {
-    //TODO: solve conflict in path
-    file_cache_dir_.mkpath(repo_id + path);
-
-    QString file_location = file_cache_dir_.absoluteFilePath(repo_id + path);
-
     FileNetworkTask* ftask = \
-           new FileNetworkTask(repo_id, path, file_name, file_location);
+           new FileNetworkTask(repo_id, path, file_name, file_cache_path_);
     const int num = addTask(ftask);
     (*ftask).task_num = num;
     (*ftask).type = SEAFILE_NETWORK_TASK_DOWNLOAD;
 
     SeafileDownloadTask* task = \
       builder_.createDownloadTask(account_, repo_id,
-                                  path, file_name, file_location);
+                                  path, file_name, file_cache_path_);
 
     task->moveToThread(worker_thread_);
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));

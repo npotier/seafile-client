@@ -87,6 +87,7 @@ private:
     Account account_;
 
     QDir file_cache_dir_;
+    QString file_cache_path_;
 
     QList<FileNetworkTask*> tasks_;
 
