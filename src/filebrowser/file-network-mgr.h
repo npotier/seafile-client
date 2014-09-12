@@ -21,7 +21,7 @@ signals:
     void redirected();
     void updateProgress(qint64 processed_bytes_, qint64 total_bytes_);
     void aborted();
-    void finished(const QString &file_location);
+    void finished();
 private slots:
     inline void onRun(int num);
     inline void onCancel();
@@ -30,7 +30,7 @@ private slots:
     inline void onRedirected(bool auto_redirect = true);
     inline void onUpdateProgress(qint64 processed_bytes_, qint64 total_bytes_);
     inline void onAborted();
-    inline void onFinished(const QString &file_real_path);
+    inline void onFinished(const QString &file_real_path_);
 
 public:
   FileNetworkTask(const QString &repo_id_,
@@ -143,7 +143,7 @@ void FileNetworkTask::onFinished(const QString &file_real_path_)
 {
     file_real_path = file_real_path_;
     status = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
-    emit finished(file_real_path);
+    emit finished();
 }
 
 int FileNetworkManager::addTask(FileNetworkTask* task)
