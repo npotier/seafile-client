@@ -15,36 +15,34 @@ FileBrowserProgressDialog::FileBrowserProgressDialog(QWidget *parent)
     QVBoxLayout *layout_ = new QVBoxLayout;
     progress_bar_ = new QProgressBar;
     description_label_ = new QLabel;
+
     layout_->addWidget(description_label_);
     layout_->addWidget(progress_bar_);
-
-    setLayout(layout_);
-    setLabel(description_label_);
-    setBar(progress_bar_);
 
     QHBoxLayout *hlayout_ = new QHBoxLayout;
     more_details_label_ = new QLabel;
     QPushButton *cancel_button_ = new QPushButton(tr("Cancel"));
     QWidget *spacer = new QWidget;
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    more_details_label_->show();
 
     hlayout_->addWidget(more_details_label_);
     hlayout_->addWidget(spacer);
     hlayout_->addWidget(cancel_button_);
-
+    hlayout_->setContentsMargins(-1, 0, -1, 6);
+    layout_->setContentsMargins(-1, 0, -1, 6);
     layout_->addLayout(hlayout_);
 
+    setLayout(layout_);
+    setLabel(description_label_);
+    setBar(progress_bar_);
     setCancelButton(cancel_button_);
-    setMaximum(0);
-    setValue(0);
 }
 void FileBrowserProgressDialog::setTask(const FileNetworkTask *task)
 {
     task_ = task;
 
     setLabelText(((task->type == SEAFILE_NETWORK_TASK_UPLOAD) ?
-       tr("Uploading %1 to %2") : tr("Downloading %1 to %2")) \
+       tr("Uploading %1 to \"%2\"") : tr("Downloading %1 to \"%2\"")) \
                  .arg(task->file_name).arg(task->file_location));
     setWindowTitle((task->type == SEAFILE_NETWORK_TASK_UPLOAD) ?
        tr("Upload") : tr("Download"));
