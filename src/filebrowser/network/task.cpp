@@ -127,6 +127,11 @@ void SeafileDownloadTask::httpFinished()
     if (reply_->error()) {
         onAborted(SEAFILE_NETWORK_TASK_NETWORK_ERROR);
         return;
+    } else if (!redirectionTarget.isNull()) {
+        status_ = SEAFILE_NETWORK_TASK_STATUS_REDIRECTING;
+        QUrl new_url = QUrl(url_).resolved(redirectionTarget.toUrl());
+        onRedirected(new_url);
+        return;
     } else if (auto_redirect_) {
         status_ = SEAFILE_NETWORK_TASK_STATUS_REDIRECTING;
         QString new_url(buf_);
@@ -138,11 +143,6 @@ void SeafileDownloadTask::httpFinished()
         new_url.chop(1);
         auto_redirect_ = false;
         onRedirected(new_url, false);
-        return;
-    } else if (!redirectionTarget.isNull()) {
-        status_ = SEAFILE_NETWORK_TASK_STATUS_REDIRECTING;
-        QUrl new_url = QUrl(url_).resolved(redirectionTarget.toUrl());
-        onRedirected(new_url);
         return;
     } else {
         //onFinished
