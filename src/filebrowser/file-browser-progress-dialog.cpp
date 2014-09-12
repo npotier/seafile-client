@@ -44,4 +44,5 @@ void FileBrowserProgressDialog::onFinished(const QString &file_path)
     setLabelText(labelText().append("finished"));
     setValue(maximum());
     QDesktopServices::openUrl(QUrl::fromLocalFile(file_path));
+    reset();
 }
