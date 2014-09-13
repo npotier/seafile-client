@@ -64,7 +64,7 @@ void SeafileNetworkTask::onRedirected(const QUrl &new_url)
 
 void SeafileNetworkTask::onAborted(SeafileNetworkTaskError error)
 {
-    qDebug() << "[netowork task]" << url_.toEncoded()
+    qDebug() << "[network task]" << url_.toEncoded()
       << " is aborted due to error" << error;
     status_ = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
     reply_->deleteLater();
