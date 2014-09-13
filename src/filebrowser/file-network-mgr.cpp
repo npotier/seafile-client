@@ -8,8 +8,8 @@
 #include "network/task.h"
 
 FileNetworkManager::FileNetworkManager(const Account &account)
-    : file_cache_dir_(defaultDownloadsPath()),
-    file_cache_path_(defaultDownloadsPath())
+    : file_cache_dir_(defaultFileCachePath()),
+    file_cache_path_(defaultFileCachePath())
 {
     if (!file_cache_path_.endsWith("/"))
         file_cache_path_.append('/');
@@ -35,7 +35,10 @@ int FileNetworkManager::createDownloadTask(const QString &repo_id,
                                            const QString &path,
                                            const QString &file_name)
 {
-    QString file_location(file_cache_dir_.absoluteFilePath(file_name));
+    QString file_location(
+        file_cache_dir_.absoluteFilePath(repo_id + path + file_name));
+    file_cache_dir_.mkpath(file_location);
+
     FileNetworkTask* ftask = \
            new FileNetworkTask(repo_id, path, file_name, file_location);
     const int num = addTask(ftask);
