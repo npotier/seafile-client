@@ -164,11 +164,10 @@ void SeafileDownloadTask::startTask()
     file_ = new QFile(file_location_, this);
     if (file_->exists()) {
         qDebug() << "[download task]" << file_location_ << "exists";
-        QFileInfo file_info(file_name_);
+        QFileInfo file_info(file_location_);
         QString alternative_file_location(file_info.dir().absolutePath() +
-                                      file_info.baseName() +
-                                      " (%1)." +
-                                      file_info.completeSuffix());
+              "/" + file_info.baseName() +
+              " (%1)." + file_info.completeSuffix());
         int i;
         for (i = 1; i != 10; i++) {
             file_->setFileName(alternative_file_location.arg(i));
