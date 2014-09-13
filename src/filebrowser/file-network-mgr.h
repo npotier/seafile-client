@@ -63,11 +63,16 @@ public:
 
     int createDownloadTask(const QString &repo_id,
                                const QString &path,
-                               const QString &filename);
+                               const QString &file_name);
     int createDownloadTask(const QString &repo_id,
                                const QString &path,
-                               const QString &filename,
+                               const QString &file_name,
                                const QString &revision);
+
+    int createUploadTask(const QString &repo_id,
+                               const QString &path,
+                               const QString &file_name,
+                               const QString &upload_file_path);
 
     FileNetworkTask* getTask(int num) {
         return tasks_[num];

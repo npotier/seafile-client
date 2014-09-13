@@ -5,6 +5,7 @@
 class Account;
 class SeafileNetworkTask;
 class SeafileDownloadTask;
+class SeafileUploadTask;
 
 class SeafileNetworkTaskBuilder
 {
@@ -14,13 +15,24 @@ public:
                                            const QString &repo_id,
                                            const QString &path,
                                            const QString &filename,
-                                           const QString &download_location);
+                                           const QString &file_location);
     SeafileDownloadTask* createDownloadTask(const Account &account,
                                            const QString &repo_id,
                                            const QString &path,
                                            const QString &filename,
                                            const QString &revision,
-                                           const QString &download_location);
+                                           const QString &file_location);
+
+    SeafileUploadTask* createUploadTask(const Account &account,
+                                           const QString &repo_id,
+                                           const QString &path,
+                                           const QString &filename,
+                                           const QString &file_location);
+    SeafileUploadTask* createUpdateTask(const Account &account,
+                                           const QString &repo_id,
+                                           const QString &path,
+                                           const QString &filename,
+                                           const QString &file_location);
 };
 
 

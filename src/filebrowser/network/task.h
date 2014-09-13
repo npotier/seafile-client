@@ -6,6 +6,7 @@
 class QNetworkReply;
 class QSslError;
 class QFile;
+class QHttpMultiPart;
 class QNetworkAccessManager;
 
 typedef enum {
@@ -84,7 +85,7 @@ class SeafileDownloadTask : public SeafileNetworkTask {
 
     QFile *file_; // the file to be download
     QString file_name_; // the file to be download
-    QString file_location_; // where the file to be saved
+    QString file_location_; // the absolute path to file
 public:
     SeafileDownloadTask(const QString &token,
                         const QUrl &url,
@@ -112,6 +113,45 @@ private slots:
 
     void httpUpdateProgress(qint64 processed_bytes, qint64 total_bytes);
     void httpProcessReady();
+    void httpFinished();
+    void onRedirected(const QUrl &new_url);
+    void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
+};
+
+class SeafileUploadTask : public SeafileNetworkTask {
+    Q_OBJECT
+    void startRequest();
+
+    QFile *file_; // the file to be upload
+    QString file_name_; // the file to be upload
+    QString file_location_; // the absolute path to file
+    QHttpMultiPart *upload_parts_; // http mutlt part
+public:
+    SeafileUploadTask(const QString &token,
+                        const QUrl &url,
+                        const QString &file_name,
+                        const QString &file_location,
+                        bool prefetch_api_required = true);
+    ~SeafileUploadTask();
+
+    QString file_name() { return file_name_; }
+    void setFilename(const QString &file_name) { file_name_ = file_name; }
+    QString fileLocation() { return file_location_; }
+    void setFileLocation(const QString &file_location) {
+        file_location_ = file_location;
+    }
+
+signals:
+    void started();
+    void redirected();
+    void updateProgress(qint64 processed_bytes, qint64 total_bytes);
+    void aborted();
+    void finished(const QString &file_path);
+
+private slots:
+    void startTask();
+
+    void httpUpdateProgress(qint64 processed_bytes, qint64 total_bytes);
     void httpFinished();
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
