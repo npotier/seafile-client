@@ -2,6 +2,14 @@
 
 ## DEVELOPMENT
 
+#### 20140913
+* add upload task support (no-gui part)
+* add hover animation for table view
+* fix linux compiling issue
+
+#### 20140912
+* enhance progress dialog
+
 #### 20140911
 * add a progress dialog for downloading
 * fix a weired behaviour while downloading
