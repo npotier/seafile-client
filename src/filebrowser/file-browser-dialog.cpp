@@ -146,6 +146,10 @@ void FileBrowserDialog::onDirChangedForcely()
 
 void FileBrowserDialog::onDirChanged(bool forcely)
 {
+    if (!path_.endsWith("/")) {
+        path_ += "/";
+    }
+
     stack_->setCurrentIndex(INDEX_LOADING_VIEW);
     data_mgr_->getDirents(repo_.id, path_, forcely);
     path_line_edit_->setText(tr(kCurrentPath).arg(path_));
@@ -194,10 +198,6 @@ void FileBrowserDialog::onDirentClicked(const SeafDirent& dirent)
 
 void FileBrowserDialog::onDirClicked(const SeafDirent& dir)
 {
-    if (!path_.endsWith("/")) {
-        path_ += "/";
-    }
-
     backward_history_->push(path_);
     if(!backward_action_->isEnabled())
         backward_action_->setEnabled(true);

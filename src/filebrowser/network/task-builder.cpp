@@ -15,7 +15,7 @@ SeafileDownloadTask* SeafileNetworkTaskBuilder::createDownloadTask(
                                        const QString &download_location)
 {
     QUrl url = account.getAbsoluteUrl(QString(kGetFileUrl).arg(repo_id));
-    url.addQueryItem("p", path + '/' + filename);
+    url.addQueryItem("p", path + filename );
     return new SeafileDownloadTask(account.token, url, filename, download_location);
 }
 
@@ -28,7 +28,8 @@ SeafileDownloadTask* SeafileNetworkTaskBuilder::createDownloadTask(
                                        const QString &download_location)
 {
     QUrl url = account.getAbsoluteUrl(QString(kGetFileFromRevisionUrl).arg(repo_id));
-    url.addQueryItem("p", path + '/' + filename);
+
+    url.addQueryItem("p", path + filename );
     url.addQueryItem("commit_id", revision);
     return new SeafileDownloadTask(account.token, url, filename, download_location);
 }

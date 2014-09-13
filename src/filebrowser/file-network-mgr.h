@@ -14,11 +14,10 @@ class FileNetworkTask : public QObject {
     Q_OBJECT;
 
 signals:
-    void run();
+    void start();
     void cancel();
 
     void started();
-    void redirected();
     void updateProgress(qint64 processed_bytes_, qint64 total_bytes_);
     void aborted();
     void finished();
@@ -27,7 +26,6 @@ private slots:
     inline void onCancel();
 
     inline void onStarted();
-    inline void onRedirected(bool auto_redirect = true);
     inline void onUpdateProgress(qint64 processed_bytes_, qint64 total_bytes_);
     inline void onAborted();
     inline void onFinished(const QString &file_real_path_);
@@ -45,7 +43,7 @@ public:
     file_real_path(file_location_ + "/" + file_name_),
     processed_bytes(0), total_bytes(0),
     status(SEAFILE_NETWORK_TASK_STATUS_UNKNOWN),
-    type(SEAFILE_NETWORK_TASK_UNKNOWN), auto_redirect(true) {}
+    type(SEAFILE_NETWORK_TASK_UNKNOWN) {}
     int task_num;
     QString repo_id;
     QString path;
@@ -56,7 +54,6 @@ public:
     qint64 total_bytes;
     SeafileNetworkTaskStatus status;
     SeafileNetworkTaskType type;
-    bool auto_redirect;
 };
 
 class FileNetworkManager : public QObject {
@@ -99,7 +96,7 @@ private:
 void FileNetworkTask::onRun(int num)
 {
     if(num == task_num)
-        emit run();
+        emit start();
 }
 
 void FileNetworkTask::onCancel()
@@ -114,20 +111,9 @@ void FileNetworkTask::onStarted()
     emit started();
 }
 
-void FileNetworkTask::onRedirected(bool auto_redirect_)
-{
-    if (!auto_redirect_) {
-        auto_redirect = auto_redirect_;
-        emit redirected();
-    }
-}
-
 void FileNetworkTask::onUpdateProgress(qint64 processed_bytes_,
                                             qint64 total_bytes_)
 {
-    //require autoredirect before real download begin
-    if (auto_redirect)
-        return;
     processed_bytes = processed_bytes_;
     total_bytes = total_bytes_;
     emit updateProgress(processed_bytes, total_bytes);

@@ -48,11 +48,10 @@ int FileNetworkManager::createDownloadTask(const QString &repo_id,
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));
 
     connect(this, SIGNAL(run(int)), ftask, SLOT(onRun(int)));
-    connect(ftask, SIGNAL(run()), task, SLOT(onRun()));
-    connect(ftask, SIGNAL(cancel()), task, SLOT(onCancel()));
+    connect(ftask, SIGNAL(start()), task, SIGNAL(start()));
+    connect(ftask, SIGNAL(cancel()), task, SIGNAL(cancel()));
 
     connect(task, SIGNAL(started()), ftask, SLOT(onStarted()));
-    connect(task, SIGNAL(redirected(bool)), ftask, SLOT(onRedirected(bool)));
     connect(task, SIGNAL(updateProgress(qint64, qint64)),
             ftask, SLOT(onUpdateProgress(qint64, qint64)));
     connect(task, SIGNAL(aborted()), ftask, SLOT(onAborted()));
