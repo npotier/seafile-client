@@ -10,22 +10,17 @@ class FileTableView : public QTableView, public FileIView
     Q_OBJECT
 public:
     FileTableView(const ServerRepo& repo, QWidget *parent=0);
-    void setMouseOver(const int);
+    void setMouseOver(const int row);
 
 signals:
     void direntClicked(const SeafDirent& dirent);
-    void direntMouseOver(const SeafDirent& dirent);
-    void direntMouseOverDone(const SeafDirent& dirent);
 
 private slots:
     void onItemDoubleClicked(const QModelIndex& index);
 
 private:
     Q_DISABLE_COPY(FileTableView)
-
-    int curr_hovered_;
-    void mouseMoveEvent(QMouseEvent *event);
-    void disableMouseOver();
+    void leaveEvent(QEvent *event);
 
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);

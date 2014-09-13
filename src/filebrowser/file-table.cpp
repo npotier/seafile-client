@@ -11,7 +11,8 @@ const int kDefaultColumnWidth = 120;
 const int kDefaultColumnHeight = 24;
 
 FileTableModel::FileTableModel(QObject *parent)
-    : QAbstractTableModel(parent)
+    : QAbstractTableModel(parent),
+      curr_hovered_(-1) // -1 is a publicly-known magic number
 {
     dirents_ = QList<SeafDirent>();
 }
@@ -50,15 +51,22 @@ QVariant FileTableModel::data(const QModelIndex & index, int role) const
         return QVariant();
     }
 
-    const SeafDirent& dirent = dirents_[index.row()];
-
-    int column = index.column();
+    const int column = index.column();
+    const int row = index.row();
+    const SeafDirent& dirent = dirents_[row];
 
     if (role == Qt::DecorationRole && column == FILE_COLUMN_ICON) {
-        return dirent.isDir() ?
+        return (dirent.isDir() ?
             QApplication::style()->standardIcon(QStyle::SP_DirIcon) :
-            QApplication::style()->standardIcon(QStyle::SP_FileIcon) ;
+            QApplication::style()->standardIcon(QStyle::SP_FileIcon)).
+          pixmap(kDefaultColumnHeight, kDefaultColumnHeight);
     }
+
+    if (role == Qt::TextAlignmentRole && column == FILE_COLUMN_NAME)
+        return Qt::AlignLeft + Qt::AlignVCenter;
+
+    if (role == Qt::BackgroundRole && row == curr_hovered_)
+        return QColor(200, 200, 220, 255);
 
     if (role == Qt::SizeHintRole) {
         QSize qsize(kDefaultColumnWidth, kDefaultColumnHeight);
@@ -145,4 +153,19 @@ Qt::ItemFlags FileTableModel::flags (const QModelIndex & index) const
     Qt::ItemFlags flags = QAbstractTableModel::flags(index);
 
     return flags | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
+}
+
+void FileTableModel::setMouseOver(const int row)
+{
+    const int curr_hovered = curr_hovered_;
+    if (curr_hovered_ == row)
+        return;
+    curr_hovered_ = row;
+
+    if (curr_hovered != -1)
+        emit dataChanged(index(curr_hovered, 0),
+                         index(curr_hovered, FILE_MAX_COLUMN-1));
+    if (curr_hovered_ != -1)
+        emit dataChanged(index(curr_hovered_, 0),
+                         index(curr_hovered_, FILE_MAX_COLUMN-1));
 }

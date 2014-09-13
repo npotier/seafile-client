@@ -28,12 +28,15 @@ public:
 
     Qt::ItemFlags flags ( const QModelIndex & index ) const;
 
+    void setMouseOver(const int row);
 private:
     Q_DISABLE_COPY(FileTableModel)
 
     QList<SeafDirent> dirents_;
 
     QList<SeafDirent> dirents();
+
+    int curr_hovered_;
 };
 
 enum {

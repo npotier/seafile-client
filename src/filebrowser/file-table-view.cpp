@@ -7,7 +7,6 @@
 
 FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     : QTableView(parent),
-      curr_hovered_(-1), // -1 is a publicly-known magic number
       repo_(repo)
 {
     verticalHeader()->hide();
@@ -16,7 +15,7 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     horizontalHeader()->setCascadingSectionResizes(true);
     horizontalHeader()->setHighlightSections(false);
     horizontalHeader()->setSortIndicatorShown(false);
-    horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::AlignVCenter);
 
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setAlternatingRowColors(true);
@@ -32,11 +31,19 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
 
     FileDelegate *delegate = new FileDelegate;
     delegate->setView(this);
-
-    setAcceptDrops(true);
-
     setItemDelegate(delegate);
     setMouseTracking(true);
+
+    setAcceptDrops(true);
+}
+
+QStyleOptionViewItem FileTableView::viewOptions () const
+{
+    QStyleOptionViewItemV4 option = QTableView::viewOptions();
+    option.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
+    option.decorationAlignment = Qt::AlignHCenter | Qt::AlignCenter;
+    option.decorationPosition = QStyleOptionViewItem::Top;
+    return option;
 }
 
 void FileTableView::onItemDoubleClicked(const QModelIndex& index)
@@ -49,44 +56,18 @@ void FileTableView::onItemDoubleClicked(const QModelIndex& index)
 
 void FileTableView::setMouseOver(const int row)
 {
-    if (row == curr_hovered_) return;
-
     FileTableModel *_model = static_cast<FileTableModel*>(model());
-    const SeafDirent dirent = _model->direntAt(row);
 
-    emit direntMouseOver(dirent);
-
-    if (curr_hovered_ != -1)
-        disableMouseOver();
-
-    curr_hovered_ = row;
+    _model->setMouseOver(row);
 }
 
-void FileTableView::disableMouseOver()
+void FileTableView::leaveEvent(QEvent *event)
 {
-    //finished
-    FileTableModel *_model = static_cast<FileTableModel*>(model());
-    const SeafDirent dirent = _model->direntAt(curr_hovered_);
-
-    emit direntMouseOverDone(dirent);
-}
-
-void FileTableView::mouseMoveEvent(QMouseEvent *event)
-{
-
-    // TODO: you need know when mouse are not in table rect
-    // then you need disable over
-
-    QTableView::mouseMoveEvent(event);
-}
-
-QStyleOptionViewItem FileTableView::viewOptions () const
-{
-    QStyleOptionViewItemV4 option = QTableView::viewOptions();
-    option.displayAlignment = Qt::AlignLeft | Qt::AlignVCenter;
-    option.decorationAlignment = Qt::AlignHCenter | Qt::AlignCenter;
-    option.decorationPosition = QStyleOptionViewItem::Top;
-    return option;
+    if (event->type() == QEvent::Leave) {
+        FileTableModel *_model = static_cast<FileTableModel*>(model());
+        _model->setMouseOver(-1);
+    }
+    QTableView::leaveEvent(event);
 }
 
 void FileTableView::dropEvent(QDropEvent *event)
@@ -111,7 +92,6 @@ void FileTableView::dropEvent(QDropEvent *event)
 
 void FileTableView::dragEnterEvent(QDragEnterEvent *event)
 {
-    qDebug() << event->proposedAction() << event->source();
     //only handle external source currently
     if(event->source() != NULL)
         return;
