@@ -117,6 +117,7 @@ void SeafileNetworkTask::onPrefetchFinished()
     QVariant redirectionTarget = reply_->attribute(
         QNetworkRequest::RedirectionTargetAttribute);
     if (reply_->error()) {
+        qDebug() << Q_FUNC_INFO << reply_->errorString();
         emit prefetchAborted();
         return;
     } else if (!redirectionTarget.isNull()) {
@@ -190,7 +191,7 @@ void SeafileDownloadTask::startTask()
         qDebug() << "[download task]" << file_->fileName() << "is used";
     }
     if (!file_->open(QIODevice::WriteOnly)) {
-        qDebug() << "[download task]" << (file_location_ + file_name_) << "is unable to open";
+        qDebug() << Q_FUNC_INFO << file_->errorString();
         onAborted(SEAFILE_NETWORK_TASK_FILE_ERROR);
         return;
     }
@@ -235,6 +236,7 @@ void SeafileDownloadTask::httpFinished()
     QVariant redirectionTarget = reply_->attribute(
         QNetworkRequest::RedirectionTargetAttribute);
     if (reply_->error()) {
+        qDebug() << Q_FUNC_INFO << reply_->errorString();
         onAborted(SEAFILE_NETWORK_TASK_NETWORK_ERROR);
         return;
     } else if (!redirectionTarget.isNull()) {
