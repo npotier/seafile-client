@@ -9,6 +9,7 @@
 #include <cstring>
 #include <QObject>
 #include <QString>
+#include <QSettings>
 #include <jansson.h>
 
 #if defined(Q_WS_MAC)
