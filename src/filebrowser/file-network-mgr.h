@@ -28,7 +28,7 @@ private slots:
     inline void onStarted();
     inline void onUpdateProgress(qint64 processed_bytes_, qint64 total_bytes_);
     inline void onAborted();
-    inline void onFinished(const QString &file_real_path_);
+    inline void onFinished(const QString &file_location_);
 
 public:
   FileNetworkTask(const QString &repo_id_,
@@ -40,7 +40,6 @@ public:
     path(path_),
     file_name(file_name_),
     file_location(file_location_),
-    file_real_path(file_location_ + "/" + file_name_),
     processed_bytes(0), total_bytes(0),
     status(SEAFILE_NETWORK_TASK_STATUS_UNKNOWN),
     type(SEAFILE_NETWORK_TASK_UNKNOWN) {}
@@ -49,7 +48,6 @@ public:
     QString path;
     QString file_name;
     QString file_location;
-    QString file_real_path;
     qint64 processed_bytes;
     qint64 total_bytes;
     SeafileNetworkTaskStatus status;
@@ -130,9 +128,9 @@ void FileNetworkTask::onAborted()
     emit aborted();
 }
 
-void FileNetworkTask::onFinished(const QString &file_real_path_)
+void FileNetworkTask::onFinished(const QString &file_location_)
 {
-    file_real_path = file_real_path_;
+    file_location = file_location_;
     status = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
 }
