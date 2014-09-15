@@ -293,6 +293,8 @@ void SeafileUploadTask::startTask()
 {
     file_ = new QFile(file_location_, this);
     upload_parts_ = new QHttpMultiPart(QHttpMultiPart::FormDataType, this);
+    req_->setRawHeader("Content-Type", "multipart/form-data; boundary=" +
+                                           upload_parts_->boundary());
     //file not exists
     if (!file_->exists()) {
         qDebug() << "[upload task]" << "file" << file_->fileName() << "not existed";
@@ -308,17 +310,17 @@ void SeafileUploadTask::startTask()
     }
     // all good to go
     QHttpPart text_part_;
-    text_part_.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
-    text_part_.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"parent_dir\""));
-    text_part_.setBody(QUrl::toPercentEncoding(parent_dir_));
+    text_part_.setHeader(QNetworkRequest::ContentDispositionHeader,
+                         QVariant("form-data; name=\"parent_dir\""));
+    text_part_.setBody(parent_dir_.toUtf8().data());
     upload_parts_->append(text_part_);
     // all good to go for body
     QHttpPart upload_part_;
-    upload_part_.setHeader(QNetworkRequest::ContentTypeHeader,
-        QVariant("application/octet-stream"));
     upload_part_.setHeader(QNetworkRequest::ContentDispositionHeader,
         QVariant(QString("form-data; name=\"file\"; filename=\"%1\"")
                     .arg(file_name_)));
+    upload_part_.setHeader(QNetworkRequest::ContentTypeHeader,
+        QVariant("application/octet-stream"));
     upload_part_.setBodyDevice(file_);
     upload_parts_->append(upload_part_);
 
