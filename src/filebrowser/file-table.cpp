@@ -117,9 +117,14 @@ QVariant FileTableModel::headerData(int section,
                                     Qt::Orientation orientation,
                                     int role) const
 {
-    if (orientation == Qt::Vertical || role != Qt::DisplayRole) {
+    if (orientation == Qt::Vertical)
         return QVariant();
-    }
+
+    if (role == Qt::TextAlignmentRole)
+        return Qt::AlignLeft + Qt::AlignVCenter;
+
+    if (role != Qt::DisplayRole)
+        return QVariant();
 
     switch (section) {
     case FILE_COLUMN_ICON:

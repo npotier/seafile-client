@@ -75,7 +75,7 @@ int FileNetworkManager::createUploadTask(const QString &repo_id,
                                            const QString &file_name,
                                            const QString &update_file_path)
 {
-    QString file_location(QFileInfo(update_file_path).absolutePath());
+    QString file_location(QFileInfo(update_file_path).absoluteFilePath());
     FileNetworkTask* ftask = \
            new FileNetworkTask(repo_id, path, file_name, file_location);
     const int num = addTask(ftask);

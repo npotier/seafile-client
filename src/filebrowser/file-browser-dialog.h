@@ -6,7 +6,9 @@
 
 #include "api/server-repo.h"
 
+class QVBoxLayout;
 class QToolBar;
+class QLabel;
 class QAction;
 class QStackedWidget;
 class QLineEdit;
@@ -45,31 +47,42 @@ private slots:
     void onGetDirentsFailed(const ApiError& error);
     void onDirChanged(bool forcely = false);
     void onDirChangedForcely();
+    void onDirentSelected(const SeafDirent& dirent);
     void onDirentClicked(const SeafDirent& dirent);
     void onBackwardActionClicked();
     void onForwardActionClicked();
     void onNavigateHomeActionClicked();
+    void onFileUpload();
+    void onFileDownload();
+    void onOpenCacheDir();
+    void onDirInvolved(const SeafDirent& dirent);
+    void onFileInvolved(const SeafDirent& dirent);
 
 private:
     Q_DISABLE_COPY(FileBrowserDialog)
 
     void createToolBar();
+    void createStatusBar();
     void createFileTable();
     void createLoadingFailedView();
-
-    void onDirClicked(const SeafDirent& dirent);
-    void onFileClicked(const SeafDirent& dirent);
 
     ServerRepo repo_;
     // current path
     QString path_;
 
+    QVBoxLayout *layout_;
     QToolBar *toolbar_;
-    QAction *refresh_action_;
     QAction *backward_action_;
     QAction *forward_action_;
     QLineEdit *path_line_edit_;
     QAction *navigate_home_action_;
+    QToolBar *status_bar_;
+    QAction *settings_action_;
+    QAction *upload_action_;
+    QAction *download_action_;
+    QLabel *details_label_;
+    QAction *refresh_action_;
+    QAction *open_cache_dir_action_;
 
     QStackedWidget *stack_;
     QWidget *loading_view_;
@@ -78,6 +91,7 @@ private:
     FileTableModel *table_model_;
     FileBrowserProgressDialog *file_progress_dialog_;
 
+    const SeafDirent *selected_dirent_;
     QStack<QString> *forward_history_;
     QStack<QString> *backward_history_;
     DataManager *data_mgr_;

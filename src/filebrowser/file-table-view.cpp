@@ -15,7 +15,7 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     horizontalHeader()->setCascadingSectionResizes(true);
     horizontalHeader()->setHighlightSections(false);
     horizontalHeader()->setSortIndicatorShown(false);
-    horizontalHeader()->setDefaultAlignment(Qt::AlignCenter | Qt::AlignVCenter);
+    horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
     setSelectionBehavior(QAbstractItemView::SelectRows);
     setAlternatingRowColors(true);

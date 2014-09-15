@@ -1,6 +1,7 @@
 #ifndef SEAFILE_CLIENT_FILE_BROWSER_PROGRESS_DIALOG_H
 #define SEAFILE_CLIENT_FILE_BROWSER_PROGRESS_DIALOG_H
 #include <QProgressDialog>
+#include <QObject>
 #include "file-network-mgr.h"
 class QProgressBar;
 class QLabel;
