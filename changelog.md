@@ -2,6 +2,11 @@
 
 ## DEVELOPMENT
 
+#### 20140915
+* add upload task support (gui part)
+* add a status bar at bottom
+* lots of ui tweaks
+
 #### 20140913
 * add upload task support (no-gui part)
 * add hover animation for table view
