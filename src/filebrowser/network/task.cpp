@@ -271,11 +271,13 @@ void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
 
 SeafileUploadTask::SeafileUploadTask(const QString &token,
                                          const QUrl &url,
+                                         const QString &parent_dir,
                                          const QString &file_name,
                                          const QString &file_location,
                                          bool prefetch_api_required)
     :SeafileNetworkTask(token, url, prefetch_api_required),
-    file_(NULL), file_name_(file_name), file_location_(file_location),
+    file_(NULL), parent_dir_(parent_dir),
+    file_name_(file_name), file_location_(file_location),
     upload_parts_(NULL)
 {
     type_ = SEAFILE_NETWORK_TASK_DOWNLOAD;
@@ -305,12 +307,18 @@ void SeafileUploadTask::startTask()
         return;
     }
     // all good to go
+    QHttpPart text_part_;
+    text_part_.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("text/plain"));
+    text_part_.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"parent_dir\""));
+    text_part_.setBody(QUrl::toPercentEncoding(parent_dir_));
+    upload_parts_->append(text_part_);
+    // all good to go for body
     QHttpPart upload_part_;
     upload_part_.setHeader(QNetworkRequest::ContentTypeHeader,
-          QVariant("application/octet-stream"));
+        QVariant("application/octet-stream"));
     upload_part_.setHeader(QNetworkRequest::ContentDispositionHeader,
-          QVariant(QString("form-data; name=\"%1\"").
-                    arg(QString(QUrl::toPercentEncoding(file_name_)))));
+        QVariant(QString("form-data; name=\"file\"; filename=\"%1\"")
+                    .arg(file_name_)));
     upload_part_.setBodyDevice(file_);
     upload_parts_->append(upload_part_);
 

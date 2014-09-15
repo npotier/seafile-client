@@ -44,8 +44,7 @@ SeafileUploadTask* SeafileNetworkTaskBuilder::createUploadTask(
                                        const QString &file_location)
 {
     QUrl url = account.getAbsoluteUrl(QString(kUploadFileUrl).arg(repo_id));
-    url.addEncodedQueryItem("p", QUrl::toPercentEncoding(path + file_name));
-    return new SeafileUploadTask(account.token, url, file_name, file_location);
+    return new SeafileUploadTask(account.token, url, path, file_name, file_location);
 }
 
 SeafileUploadTask* SeafileNetworkTaskBuilder::createUpdateTask(
@@ -56,6 +55,5 @@ SeafileUploadTask* SeafileNetworkTaskBuilder::createUpdateTask(
                                        const QString &file_location)
 {
     QUrl url = account.getAbsoluteUrl(QString(kUpdateFileUrl).arg(repo_id));
-    url.addEncodedQueryItem("p", QUrl::toPercentEncoding(path + file_name));
-    return new SeafileUploadTask(account.token, url, file_name, file_location);
+    return new SeafileUploadTask(account.token, url, path, file_name, file_location);
 }

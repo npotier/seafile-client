@@ -123,12 +123,14 @@ class SeafileUploadTask : public SeafileNetworkTask {
     void startRequest();
 
     QFile *file_; // the file to be upload
+    QString parent_dir_; // the parent dir chose to be upload
     QString file_name_; // the file to be upload
     QString file_location_; // the absolute path to file
     QHttpMultiPart *upload_parts_; // http mutlt part
 public:
     SeafileUploadTask(const QString &token,
                         const QUrl &url,
+                        const QString &parent_dir,
                         const QString &file_name,
                         const QString &file_location,
                         bool prefetch_api_required = true);
