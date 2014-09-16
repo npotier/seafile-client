@@ -33,7 +33,7 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     FileDelegate *delegate = new FileDelegate;
     delegate->setView(this);
     setItemDelegate(delegate);
-    setMouseTracking(true);
+    //setMouseTracking(true); //disable hover effect temporary
 
     setAcceptDrops(true);
 }
