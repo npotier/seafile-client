@@ -29,10 +29,8 @@ enum {
 };
 
 const char kLoadingFaieldLabelName[] = "loadingFailedText";
-const char kCurrentPath[] = "Current Path: %1";
 const int kToolBarHeight = 36;
 const int kToolBarIconSize = 32;
-const int kStatusBarHeight = 24;
 const int kStatusBarIconSize = 16;
 
 } // namespace
@@ -42,6 +40,7 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
       repo_(repo)
 {
     path_ = "/";
+    repo_id_and_path_ = tr("Library \"%1\": %2").arg(repo.name);
     forward_history_ = new QStack<QString>();
     backward_history_ = new QStack<QString>();
     selected_dirent_ = NULL;
@@ -51,7 +50,7 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
     file_network_mgr_ = new FileNetworkManager(account);
     file_progress_dialog_ = new FileBrowserProgressDialog(this);
 
-    setWindowTitle(tr("File Browser - %1").arg(repo.name));
+    setWindowTitle(tr("File Browser - %1").arg(account.serverUrl.toString()));
     setWindowIcon(QIcon(":/images/seafile.png"));
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     //don't help
@@ -71,6 +70,7 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
     stack_->insertWidget(INDEX_TABLE_VIEW, table_view_);
     stack_->insertWidget(INDEX_LOADING_FAILED_VIEW, loading_failed_view_);
     stack_->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+    stack_->setContentsMargins(0, 0, 0, -14);
 
     layout_->addWidget(toolbar_);
     layout_->addWidget(stack_);
@@ -130,11 +130,11 @@ void FileBrowserDialog::createToolBar()
 
     path_line_edit_ = new QLineEdit;
     path_line_edit_->setReadOnly(true);
-    path_line_edit_->setText(tr(kCurrentPath).arg("/"));
+    path_line_edit_->setText(repo_id_and_path_.arg(path_));
     path_line_edit_->setAlignment(Qt::AlignHCenter | Qt::AlignLeft);
-    path_line_edit_->setMinimumWidth(400);
-    path_line_edit_->setMaxLength(100);
-    path_line_edit_->setFrame(false);
+    path_line_edit_->setMaximumHeight(kToolBarIconSize);
+    path_line_edit_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+    path_line_edit_->setStyleSheet("border-radius: 5px; margin-right: 12px");
     toolbar_->addWidget(path_line_edit_);
 }
 
@@ -161,22 +161,17 @@ void FileBrowserDialog::createStatusBar()
 
     const int w = ::getDPIScaledSize(kStatusBarIconSize);
     status_bar_->setIconSize(QSize(w, w));
-    status_bar_->setContentsMargins(12, 0, 12, 6);
-    status_bar_->setMaximumHeight(kStatusBarHeight);
-    status_bar_->setMinimumHeight(kStatusBarHeight);
-
-    QWidget *spacer1 = new QWidget;
-    spacer1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-    status_bar_->addWidget(spacer1);
+    status_bar_->setContentsMargins(10, -10, 10, 14);
+    status_bar_->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
     settings_action_ = new QAction(this);
     settings_action_->setIcon(QIcon(":/images/account-settings.png"));
     settings_action_->setEnabled(false);
     status_bar_->addAction(settings_action_);
 
-    QWidget *spacer2 = new QWidget;
-    spacer2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
-    status_bar_->addWidget(spacer2);
+    QWidget *spacer1 = new QWidget;
+    spacer1->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+    status_bar_->addWidget(spacer1);
 
     upload_action_ = new QAction(this);
     upload_action_->setIcon(QIcon(":/images/plus.png"));
@@ -198,18 +193,14 @@ void FileBrowserDialog::createStatusBar()
     connect(refresh_action_, SIGNAL(triggered()), this, SIGNAL(dirChangedForcely()));
     status_bar_->addAction(refresh_action_);
 
-    QWidget *spacer3 = new QWidget;
-    spacer3->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    status_bar_->addWidget(spacer3);
+    QWidget *spacer2 = new QWidget;
+    spacer2->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    status_bar_->addWidget(spacer2);
 
     open_cache_dir_action_ = new QAction(this);
     open_cache_dir_action_->setIcon(QIcon(":/images/folder-open@2x.png"));
     connect(open_cache_dir_action_, SIGNAL(triggered()), this, SLOT(onOpenCacheDir()));
     status_bar_->addAction(open_cache_dir_action_);
-
-    QWidget *spacer4 = new QWidget;
-    spacer4->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    status_bar_->addWidget(spacer4);
 }
 
 void FileBrowserDialog::onDirChangedForcely()
@@ -223,9 +214,10 @@ void FileBrowserDialog::onDirChanged(bool forcely)
         path_ += "/";
     }
 
+    details_label_->setText(tr("Loading..."));
     stack_->setCurrentIndex(INDEX_LOADING_VIEW);
     data_mgr_->getDirents(repo_.id, path_, forcely);
-    path_line_edit_->setText(tr(kCurrentPath).arg(path_));
+    path_line_edit_->setText(repo_id_and_path_.arg(path_));
 }
 
 void FileBrowserDialog::onGetDirentsSuccess(const QList<SeafDirent>& dirents)
@@ -239,6 +231,7 @@ void FileBrowserDialog::onGetDirentsSuccess(const QList<SeafDirent>& dirents)
 void FileBrowserDialog::onGetDirentsFailed(const ApiError& error)
 {
     Q_UNUSED(error);
+    details_label_->setText(tr("Failed to load at path: %1").arg(path_));
     stack_->setCurrentIndex(INDEX_LOADING_FAILED_VIEW);
 }
 

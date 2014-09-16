@@ -69,6 +69,7 @@ private:
     ServerRepo repo_;
     // current path
     QString path_;
+    QString repo_id_and_path_;
 
     QVBoxLayout *layout_;
     QToolBar *toolbar_;

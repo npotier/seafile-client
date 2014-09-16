@@ -183,8 +183,10 @@ const SeafDirent *FileTableModel::selectedDirent() const
 
 void FileTableModel::onSelectionChanged(const int row)
 {
-    if (row != -1)
+    if (row != -1) {
         selected_dirent_ = &dirents_[row];
+        emit dataChanged(index(row, 0), index(row, FILE_MAX_COLUMN-1));
+    }
     else
         selected_dirent_ = NULL;
     return;

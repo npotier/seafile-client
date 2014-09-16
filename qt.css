@@ -419,7 +419,6 @@ FileTableView {
     min-height: 400px;
     border: 0;
     padding: 6px;
-    margin-bottom: 0px;
     selection-background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                              stop: 0 #D7F4F7, stop: 0.4 #CEECF0,
                              stop: 0.6 #C5E4E8, stop: 1.0 #D7F4F7);
