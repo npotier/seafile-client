@@ -2,10 +2,15 @@
 
 ## DEVELOPMENT
 
+#### 20140916
+* continue 20140915 work, and bring more ui tweaks
+* upload fix the behaviour when finished
+* disable hover effect temporarily
+
 #### 20140915
 * add upload task support (gui part)
 * add a status bar at bottom
-* lots of ui tweaks
+* bring lots of ui tweaks
 
 #### 20140913
 * add upload task support (no-gui part)
