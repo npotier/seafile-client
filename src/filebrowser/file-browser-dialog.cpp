@@ -39,6 +39,7 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
     : QDialog(parent),
       repo_(repo)
 {
+    setAttribute(Qt::WA_DeleteOnClose);
     path_ = "/";
     repo_id_and_path_ = tr("Library \"%1\": %2").arg(repo.name);
     forward_history_ = new QStack<QString>();
