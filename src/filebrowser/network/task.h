@@ -63,6 +63,7 @@ protected slots:
 #endif
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
+    void onClose();
 
 private slots:
     void onPrefetchProcessReady();
@@ -116,6 +117,7 @@ private slots:
     void httpFinished();
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
+    void onClose();
 };
 
 class SeafileUploadTask : public SeafileNetworkTask {
@@ -157,6 +159,7 @@ private slots:
     void httpFinished();
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
+    void onClose();
 };
 
 #endif // SEAFILE_NETWORK_TASK_H

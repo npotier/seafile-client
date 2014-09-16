@@ -41,12 +41,18 @@ void SeafileNetworkTask::sslErrors(QNetworkReply*, const QList<QSslError> &error
     reply_->ignoreSslErrors();
 }
 #endif
+
 SeafileNetworkTask::~SeafileNetworkTask()
 {
-    if (reply_) {
+    onClose();
+}
+
+void SeafileNetworkTask::onClose()
+{
+    if (reply_)
         onAborted();
+    if (reply_)
         reply_->deleteLater();
-    }
     delete req_;
     delete prefetch_api_url_buf_;
 }
@@ -61,7 +67,6 @@ void SeafileNetworkTask::onRedirected(const QUrl &new_url)
     reply_->deleteLater();
     reply_ = NULL;
 }
-
 
 void SeafileNetworkTask::onAborted(SeafileNetworkTaskError error)
 {
@@ -126,17 +131,16 @@ void SeafileNetworkTask::onPrefetchFinished()
         onRedirected(new_url);
         startPrefetchRequest();
         return;
-    } else {
-        QString new_url(*prefetch_api_url_buf_);
-        if (new_url.size() <= 2) {
-            emit prefetchAborted();
-            return;
-        }
-        new_url.remove(0, 1);
-        new_url.chop(1);
-        onRedirected(new_url);
-        status_ = SEAFILE_NETWORK_TASK_STATUS_PREFETCHED;
     }
+    QString new_url(*prefetch_api_url_buf_);
+    if (new_url.size() <= 2) {
+        emit prefetchAborted();
+        return;
+    }
+    new_url.remove(0, 1);
+    new_url.chop(1);
+    onRedirected(new_url);
+    status_ = SEAFILE_NETWORK_TASK_STATUS_PREFETCHED;
     if (reply_) {
         reply_->deleteLater();
         reply_ = NULL;
@@ -159,7 +163,12 @@ SeafileDownloadTask::SeafileDownloadTask(const QString &token,
 
 SeafileDownloadTask::~SeafileDownloadTask()
 {
-    SeafileNetworkTask::~SeafileNetworkTask();
+    onClose();
+}
+
+void SeafileDownloadTask::onClose()
+{
+    SeafileNetworkTask::onClose();
 }
 
 void SeafileDownloadTask::startTask()
@@ -239,16 +248,12 @@ void SeafileDownloadTask::httpFinished()
         QUrl new_url = QUrl(url_).resolved(redirectionTarget.toUrl());
         onRedirected(new_url);
         return;
-    } else {
-        //onFinished
-        qDebug() << "[download task]" << url_.toEncoded() << "finished";
-        status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
-        emit finished(file_location_);
     }
-    reply_->deleteLater();
-    reply_ = NULL;
-    delete file_;
-    file_ = NULL;
+    //onFinished
+    qDebug() << "[download task]" << url_.toEncoded() << "finished";
+    status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+    emit finished(file_location_);
+    onClose();
 }
 
 void SeafileDownloadTask::onRedirected(const QUrl &new_url)
@@ -270,6 +275,7 @@ void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
         file_ = NULL;
     }
     emit aborted();
+    onClose();
 }
 
 SeafileUploadTask::SeafileUploadTask(const QString &token,
@@ -290,7 +296,12 @@ SeafileUploadTask::SeafileUploadTask(const QString &token,
 
 SeafileUploadTask::~SeafileUploadTask()
 {
-    SeafileNetworkTask::~SeafileNetworkTask();
+    onClose();
+}
+
+void SeafileUploadTask::onClose()
+{
+    SeafileNetworkTask::onClose();
 }
 
 void SeafileUploadTask::startTask()
@@ -368,17 +379,13 @@ void SeafileUploadTask::httpFinished()
         QUrl new_url = QUrl(url_).resolved(redirectionTarget.toUrl());
         onRedirected(new_url);
         return;
-    } else {
-        //onFinished
-        qDebug() << "[upload task]" << url_.toEncoded() << "finished";
-        QString file_path = QFileInfo(*file_).absoluteFilePath();
-        status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
-        emit finished(file_path);
     }
-    reply_->deleteLater();
-    reply_ = NULL;
-    delete file_;
-    file_ = NULL;
+    //onFinished
+    qDebug() << "[upload task]" << url_.toEncoded() << "finished";
+    QString file_path = QFileInfo(*file_).absoluteFilePath();
+    status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+    emit finished(file_path);
+    onClose();
 }
 
 void SeafileUploadTask::onRedirected(const QUrl &new_url)
@@ -398,5 +405,6 @@ void SeafileUploadTask::onAborted(SeafileNetworkTaskError error)
         file_ = NULL;
     }
     emit aborted();
+    onClose();
 }
 
