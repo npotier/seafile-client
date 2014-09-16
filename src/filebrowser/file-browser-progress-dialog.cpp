@@ -87,7 +87,8 @@ void FileBrowserProgressDialog::onFinished()
     disconnect(task_, 0, this, 0);
     more_details_label_->setText(tr("Finished"));
     setValue(maximum());
-    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(task_->file_location)) &&
+    if (task_->type == SEAFILE_NETWORK_TASK_DOWNLOAD &&
+        !QDesktopServices::openUrl(QUrl::fromLocalFile(task_->file_location)) &&
         !QDesktopServices::openUrl( \
             QUrl::fromLocalFile(QFileInfo(task_->file_location).dir().absolutePath())))
         qDebug() << Q_FUNC_INFO << task_->file_location
