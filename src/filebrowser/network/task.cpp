@@ -157,6 +157,7 @@ SeafileDownloadTask::SeafileDownloadTask(const QString &token,
 
 SeafileDownloadTask::~SeafileDownloadTask()
 {
+    SeafileNetworkTask::~SeafileNetworkTask();
 }
 
 void SeafileDownloadTask::startTask()
@@ -287,6 +288,7 @@ SeafileUploadTask::SeafileUploadTask(const QString &token,
 
 SeafileUploadTask::~SeafileUploadTask()
 {
+    SeafileNetworkTask::~SeafileNetworkTask();
 }
 
 void SeafileUploadTask::startTask()

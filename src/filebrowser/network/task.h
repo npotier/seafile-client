@@ -42,7 +42,7 @@ class SeafileNetworkTask : public QObject {
 public:
     SeafileNetworkTask(const QString &token, const QUrl &url,
                        bool prefetch_api_required = true);
-    ~SeafileNetworkTask();
+    virtual ~SeafileNetworkTask();
 
     SeafileNetworkTaskStatus status() { return status_; }
 
