@@ -18,6 +18,7 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     horizontalHeader()->setDefaultAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
     setSelectionBehavior(QAbstractItemView::SelectRows);
+    setSelectionMode(QAbstractItemView::SingleSelection);
     setAlternatingRowColors(true);
 
     setGridStyle(Qt::NoPen);
@@ -100,3 +101,15 @@ void FileTableView::dragEnterEvent(QDragEnterEvent *event)
         event->accept();
     }
 }
+
+void FileTableView::selectionChanged(const QItemSelection &selected,
+                                     const QItemSelection &deselected)
+{
+    int row = -1;
+    if (&selected == &deselected)
+        return;
+    if  (!selected.isEmpty())
+        row = selected.indexes().first().row();
+    emit selectionChanged(row);
+}
+

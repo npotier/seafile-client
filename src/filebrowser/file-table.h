@@ -10,6 +10,9 @@
 class FileTableModel : public QAbstractTableModel
 {
     Q_OBJECT
+signals:
+    void selectionChanged();
+
 public:
     FileTableModel(QObject *parent=0);
 
@@ -29,10 +32,18 @@ public:
     Qt::ItemFlags flags ( const QModelIndex & index ) const;
 
     void setMouseOver(const int row);
+
+    const SeafDirent *selectedDirent() const;
+
+private slots:
+    void onSelectionChanged(const int row);
+
 private:
     Q_DISABLE_COPY(FileTableModel)
 
     QList<SeafDirent> dirents_;
+
+    SeafDirent *selected_dirent_;
 
     QList<SeafDirent> dirents();
 

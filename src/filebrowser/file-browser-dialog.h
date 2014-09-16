@@ -43,11 +43,11 @@ signals:
     void dirChangedForcely();
 
 private slots:
+    void onSelectionChanged();
     void onGetDirentsSuccess(const QList<SeafDirent>& dirents);
     void onGetDirentsFailed(const ApiError& error);
     void onDirChanged(bool forcely = false);
     void onDirChangedForcely();
-    void onDirentSelected(const SeafDirent& dirent);
     void onDirentClicked(const SeafDirent& dirent);
     void onBackwardActionClicked();
     void onForwardActionClicked();

@@ -145,6 +145,14 @@ void FileBrowserDialog::createFileTable()
     table_model_ = new FileTableModel;
     table_view_->setModel(table_model_);
     table_view_->setContentsMargins(0,0,0,0);
+    connect(table_view_,
+            SIGNAL(selectionChanged(const int)),
+            table_model_,
+            SLOT(onSelectionChanged(const int)));
+    connect(table_view_,
+            SIGNAL(selectionChanged(const int)),
+            this,
+            SLOT(onSelectionChanged()));
 }
 
 void FileBrowserDialog::createStatusBar()
@@ -254,13 +262,13 @@ void FileBrowserDialog::createLoadingFailedView()
 
     layout->addWidget(label);
 }
-void FileBrowserDialog::onDirentSelected(const SeafDirent &dirent)
+void FileBrowserDialog::onSelectionChanged()
 {
-    if (selected_dirent_ == &dirent)
+    selected_dirent_ = table_model_->selectedDirent();
+    if (selected_dirent_ == NULL) {
+        download_action_->setEnabled(false);
         return;
-
-    selected_dirent_ = &dirent;
-
+    }
     if (selected_dirent_->isDir())
         download_action_->setEnabled(false);
     else
@@ -323,7 +331,9 @@ void FileBrowserDialog::onFileUpload()
 
 void FileBrowserDialog::onFileDownload()
 {
-    if (selected_dirent_  == NULL)
+    if (selected_dirent_ == NULL)
+        return;
+    if (selected_dirent_->isDir()) //no implemented yet
         return;
     int task_num = file_network_mgr_->createDownloadTask(repo_.id, path_,
                                                 selected_dirent_->name);

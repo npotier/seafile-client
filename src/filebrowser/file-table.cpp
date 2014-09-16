@@ -12,6 +12,7 @@ const int kDefaultColumnHeight = 24;
 
 FileTableModel::FileTableModel(QObject *parent)
     : QAbstractTableModel(parent),
+      selected_dirent_(NULL),
       curr_hovered_(-1) // -1 is a publicly-known magic number
 {
     dirents_ = QList<SeafDirent>();
@@ -173,4 +174,18 @@ void FileTableModel::setMouseOver(const int row)
     if (curr_hovered_ != -1)
         emit dataChanged(index(curr_hovered_, 0),
                          index(curr_hovered_, FILE_MAX_COLUMN-1));
+}
+
+const SeafDirent *FileTableModel::selectedDirent() const
+{
+    return selected_dirent_;
+}
+
+void FileTableModel::onSelectionChanged(const int row)
+{
+    if (row != -1)
+        selected_dirent_ = &dirents_[row];
+    else
+        selected_dirent_ = NULL;
+    return;
 }

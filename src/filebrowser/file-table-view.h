@@ -14,6 +14,7 @@ public:
 
 signals:
     void direntClicked(const SeafDirent& dirent);
+    void selectionChanged(const int row);
 
 private slots:
     void onItemDoubleClicked(const QModelIndex& index);
@@ -24,6 +25,9 @@ private:
 
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
+
+    void selectionChanged(const QItemSelection &selected,
+                          const QItemSelection &deselected);
 
     QStyleOptionViewItem viewOptions() const;
 
