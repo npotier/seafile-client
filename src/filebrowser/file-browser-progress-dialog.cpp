@@ -78,7 +78,9 @@ void FileBrowserProgressDialog::onAborted()
 {
     disconnect(task_, 0, this, 0);
     more_details_label_->setText(tr("Aborted"));
-    QMessageBox::warning(static_cast<QWidget*>(parent()), tr("Aborted"), labelText());
+    QMessageBox::warning(static_cast<QWidget*>(parent()),
+                         tr("Aborted"),
+                         description_label_->text().append('\n').append(tr("Aborted")));
 
     reset();
 }
@@ -86,7 +88,12 @@ void FileBrowserProgressDialog::onFinished()
 {
     disconnect(task_, 0, this, 0);
     more_details_label_->setText(tr("Finished"));
-    setValue(maximum());
+    progress_bar_->setValue(maximum());
+    if (task_->type == SEAFILE_NETWORK_TASK_UPLOAD)
+        QMessageBox::information(static_cast<QWidget*>(parent()),
+                          tr("Finished"),
+                          description_label_->text().append('\n').append(tr("Finished")));
+
     if (task_->type == SEAFILE_NETWORK_TASK_DOWNLOAD &&
         !QDesktopServices::openUrl(QUrl::fromLocalFile(task_->file_location)) &&
         !QDesktopServices::openUrl( \
