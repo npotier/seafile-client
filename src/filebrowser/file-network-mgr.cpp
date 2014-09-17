@@ -35,9 +35,10 @@ int FileNetworkManager::createDownloadTask(const QString &repo_id,
                                            const QString &path,
                                            const QString &file_name)
 {
+    file_cache_dir_.mkpath(file_cache_dir_.absoluteFilePath(repo_id + path));
+
     QString file_location(
         file_cache_dir_.absoluteFilePath(repo_id + path + file_name));
-    file_cache_dir_.mkpath(file_location);
 
     FileNetworkTask* ftask = \
            new FileNetworkTask(repo_id, path, file_name, file_location);
