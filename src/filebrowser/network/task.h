@@ -54,6 +54,7 @@ signals:
     void cancel();
     void prefetchAborted();
     void prefetchFinished();
+    void prefetchOid(const QString &oid);
 
 protected slots:
     void onStart();
@@ -106,8 +107,9 @@ signals:
     void started();
     void redirected();
     void updateProgress(qint64 processed_bytes, qint64 total_bytes);
+    void fileLocationChanged(const QString &);
     void aborted();
-    void finished(const QString &file_path);
+    void finished();
 
 private slots:
     void startTask();
@@ -150,7 +152,7 @@ signals:
     void redirected();
     void updateProgress(qint64 processed_bytes, qint64 total_bytes);
     void aborted();
-    void finished(const QString &file_path);
+    void finished();
 
 private slots:
     void startTask();

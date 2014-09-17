@@ -60,9 +60,12 @@ int FileNetworkManager::createDownloadTask(const QString &repo_id,
     connect(task, SIGNAL(started()), ftask, SLOT(onStarted()));
     connect(task, SIGNAL(updateProgress(qint64, qint64)),
             ftask, SLOT(onUpdateProgress(qint64, qint64)));
+    connect(task, SIGNAL(prefetchOid(const QString &)),
+            ftask, SLOT(onPrefetchOid(const QString &)));
+    connect(task, SIGNAL(fileLocationChanged(const QString &)),
+            ftask, SLOT(onFileLocationChanged(const QString &)));
     connect(task, SIGNAL(aborted()), ftask, SLOT(onAborted()));
-    connect(task, SIGNAL(finished(const QString &)),
-            ftask, SLOT(onFinished(const QString &)));
+    connect(task, SIGNAL(finished()), ftask, SLOT(onFinished()));
 
     (*ftask).status = SEAFILE_NETWORK_TASK_STATUS_FRESH;
     worker_thread_->start();
@@ -98,8 +101,7 @@ int FileNetworkManager::createUploadTask(const QString &repo_id,
     connect(task, SIGNAL(updateProgress(qint64, qint64)),
             ftask, SLOT(onUpdateProgress(qint64, qint64)));
     connect(task, SIGNAL(aborted()), ftask, SLOT(onAborted()));
-    connect(task, SIGNAL(finished(const QString &)),
-            ftask, SLOT(onFinished(const QString &)));
+    connect(task, SIGNAL(finished()), ftask, SLOT(onFinished()));
 
     (*ftask).status = SEAFILE_NETWORK_TASK_STATUS_FRESH;
     worker_thread_->start();

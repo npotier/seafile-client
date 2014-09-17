@@ -139,6 +139,8 @@ void SeafileNetworkTask::onPrefetchFinished()
     }
     new_url.remove(0, 1);
     new_url.chop(1);
+    if (reply_->hasRawHeader("oid"))
+        emit prefetchOid(reply_->rawHeader("oid"));
     onRedirected(new_url);
     status_ = SEAFILE_NETWORK_TASK_STATUS_PREFETCHED;
     if (reply_) {
@@ -192,14 +194,15 @@ void SeafileDownloadTask::startTask()
             onAborted(SEAFILE_NETWORK_TASK_FILE_ERROR);
             return;
         }
-        qDebug() << "[download task]" << file_->fileName() << "is used";
+        file_location_ = file_->fileName();
+        qDebug() << "[download task]" << file_location_ << "is used";
+        emit fileLocationChanged(file_location_);
     }
     if (!file_->open(QIODevice::WriteOnly)) {
         qDebug() << Q_FUNC_INFO << file_->errorString();
         onAborted(SEAFILE_NETWORK_TASK_FILE_ERROR);
         return;
     }
-    file_location_ = file_->fileName();
 
     emit started();
     startRequest();
@@ -252,7 +255,7 @@ void SeafileDownloadTask::httpFinished()
     //onFinished
     qDebug() << "[download task]" << url_.toEncoded() << "finished";
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
-    emit finished(file_location_);
+    emit finished();
     onClose();
 }
 
@@ -382,9 +385,8 @@ void SeafileUploadTask::httpFinished()
     }
     //onFinished
     qDebug() << "[upload task]" << url_.toEncoded() << "finished";
-    QString file_path = QFileInfo(*file_).absoluteFilePath();
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
-    emit finished(file_path);
+    emit finished();
     onClose();
 }
 
