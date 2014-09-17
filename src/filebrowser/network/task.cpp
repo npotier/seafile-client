@@ -45,6 +45,8 @@ void SeafileNetworkTask::sslErrors(QNetworkReply*, const QList<QSslError> &error
 SeafileNetworkTask::~SeafileNetworkTask()
 {
     onClose();
+    delete req_;
+    delete prefetch_api_url_buf_;
 }
 
 void SeafileNetworkTask::onClose()
@@ -53,8 +55,6 @@ void SeafileNetworkTask::onClose()
         onAborted();
     if (reply_)
         reply_->deleteLater();
-    delete req_;
-    delete prefetch_api_url_buf_;
 }
 
 void SeafileNetworkTask::onRedirected(const QUrl &new_url)
@@ -159,8 +159,9 @@ SeafileDownloadTask::SeafileDownloadTask(const QString &token,
     file_(NULL), file_name_(file_name), file_location_(file_location)
 {
     type_ = SEAFILE_NETWORK_TASK_DOWNLOAD;
-    connect(this, SIGNAL(prefetchFinished()), this, SLOT(startTask()));
     connect(this, SIGNAL(prefetchAborted()), this, SLOT(onAborted()));
+    //start download manually, invoke this after signal prefetchFinished
+    connect(this, SIGNAL(resume()), this, SLOT(onStartDownload()));
 }
 
 SeafileDownloadTask::~SeafileDownloadTask()
@@ -173,7 +174,7 @@ void SeafileDownloadTask::onClose()
     SeafileNetworkTask::onClose();
 }
 
-void SeafileDownloadTask::startTask()
+void SeafileDownloadTask::onStartDownload()
 {
     file_ = new QFile(file_location_, this);
     if (file_->exists()) {
@@ -257,6 +258,7 @@ void SeafileDownloadTask::httpFinished()
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
     onClose();
+    delete this;
 }
 
 void SeafileDownloadTask::onRedirected(const QUrl &new_url)
@@ -279,6 +281,7 @@ void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
     }
     emit aborted();
     onClose();
+    delete this;
 }
 
 SeafileUploadTask::SeafileUploadTask(const QString &token,
@@ -293,8 +296,8 @@ SeafileUploadTask::SeafileUploadTask(const QString &token,
     upload_parts_(NULL)
 {
     type_ = SEAFILE_NETWORK_TASK_DOWNLOAD;
-    connect(this, SIGNAL(prefetchFinished()), this, SLOT(startTask()));
     connect(this, SIGNAL(prefetchAborted()), this, SLOT(onAborted()));
+    connect(this, SIGNAL(resume()), this, SLOT(onStartUpload()));
 }
 
 SeafileUploadTask::~SeafileUploadTask()
@@ -307,7 +310,7 @@ void SeafileUploadTask::onClose()
     SeafileNetworkTask::onClose();
 }
 
-void SeafileUploadTask::startTask()
+void SeafileUploadTask::onStartUpload()
 {
     file_ = new QFile(file_location_, this);
     upload_parts_ = new QHttpMultiPart(QHttpMultiPart::FormDataType, this);
@@ -388,6 +391,7 @@ void SeafileUploadTask::httpFinished()
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
     onClose();
+    delete this;
 }
 
 void SeafileUploadTask::onRedirected(const QUrl &new_url)
@@ -408,5 +412,6 @@ void SeafileUploadTask::onAborted(SeafileNetworkTaskError error)
     }
     emit aborted();
     onClose();
+    delete this;
 }
 

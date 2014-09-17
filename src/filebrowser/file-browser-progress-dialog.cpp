@@ -41,10 +41,10 @@ void FileBrowserProgressDialog::setTask(const FileNetworkTask *task)
 {
     task_ = task;
 
-    setLabelText(((task->type == SEAFILE_NETWORK_TASK_UPLOAD) ?
+    setLabelText(((task->type() == SEAFILE_NETWORK_TASK_UPLOAD) ?
        tr("Uploading %1 to \"%2\"") : tr("Downloading %1 to \"%2\"")) \
-                 .arg(task->file_name).arg(task->file_location));
-    setWindowTitle((task->type == SEAFILE_NETWORK_TASK_UPLOAD) ?
+                 .arg(task->fileName()).arg(task->fileLocation()));
+    setWindowTitle((task->type() == SEAFILE_NETWORK_TASK_UPLOAD) ?
        tr("Upload") : tr("Download"));
 
     more_details_label_->setText("");
@@ -89,16 +89,16 @@ void FileBrowserProgressDialog::onFinished()
     disconnect(task_, 0, this, 0);
     more_details_label_->setText(tr("Finished"));
     progress_bar_->setValue(maximum());
-    if (task_->type == SEAFILE_NETWORK_TASK_UPLOAD)
+    if (task_->type() == SEAFILE_NETWORK_TASK_UPLOAD)
         QMessageBox::information(static_cast<QWidget*>(parent()),
                           tr("Finished"),
                           description_label_->text().append('\n').append(tr("Finished")));
 
-    if (task_->type == SEAFILE_NETWORK_TASK_DOWNLOAD &&
-        !QDesktopServices::openUrl(QUrl::fromLocalFile(task_->file_location)) &&
+    if (task_->type() == SEAFILE_NETWORK_TASK_DOWNLOAD &&
+        !QDesktopServices::openUrl(QUrl::fromLocalFile(task_->fileLocation())) &&
         !QDesktopServices::openUrl( \
-            QUrl::fromLocalFile(QFileInfo(task_->file_location).dir().absolutePath())))
-        qDebug() << Q_FUNC_INFO << task_->file_location
+            QUrl::fromLocalFile(QFileInfo(task_->fileLocation()).dir().absolutePath())))
+        qDebug() << Q_FUNC_INFO << task_->fileLocation()
           << " is downloaded but unable to open via openUrl";
 
     reset();

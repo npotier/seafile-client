@@ -2,18 +2,17 @@
 
 #include <QThread>
 #include <QDebug>
-#include <cassert>
 #include "utils/utils.h"
 #include "api/api-error.h"
 #include "network/task.h"
 
 FileNetworkManager::FileNetworkManager(const Account &account)
-    : file_cache_dir_(defaultFileCachePath()),
+    : account_(account),
+    file_cache_dir_(defaultFileCachePath()),
     file_cache_path_(defaultFileCachePath())
 {
     if (!file_cache_path_.endsWith("/"))
         file_cache_path_.append('/');
-    account_ = account;
     worker_thread_ = new QThread;
 }
 
@@ -22,89 +21,79 @@ FileNetworkManager::~FileNetworkManager()
     worker_thread_->quit();
     worker_thread_->wait();
     delete worker_thread_;
-    while (!tasks_.isEmpty())
-    {
-        FileNetworkTask* last = tasks_.last();
-        tasks_.pop_back();
-        delete last;
-    }
-
 }
 
-int FileNetworkManager::createDownloadTask(const QString &repo_id,
+FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
                                            const QString &path,
-                                           const QString &file_name)
+                                           const QString &file_name,
+                                           const QString &oid)
 {
     file_cache_dir_.mkpath(file_cache_dir_.absoluteFilePath(repo_id + path));
 
     QString file_location(
         file_cache_dir_.absoluteFilePath(repo_id + path + file_name));
 
-    FileNetworkTask* ftask = \
-           new FileNetworkTask(repo_id, path, file_name, file_location);
-    const int num = addTask(ftask);
-    (*ftask).task_num = num;
-    (*ftask).type = SEAFILE_NETWORK_TASK_DOWNLOAD;
+    if (!oid.isEmpty()) {
+        FileNetworkTask *associated_task;
+        if (cached_tasks_.contains(oid) &&
+            (associated_task = cached_tasks_[oid]) &&
+            associated_task->oid() == oid &&
+            associated_task->status() == SEAFILE_NETWORK_TASK_STATUS_FINISHED &&
+            QFileInfo(associated_task->fileLocation()).exists()) {
+            //TODO : duplicate task here
+            return associated_task;
+        }
+    }
 
-    SeafileDownloadTask* task = \
-      builder_.createDownloadTask(account_, repo_id,
-                                  path, file_name, file_location);
+    SeafileDownloadTask *network_task =
+        network_task_builder_.createDownloadTask(account_, repo_id, path,
+                                                 file_name, file_location);
+    network_task->setParent(worker_thread_);
 
-    task->moveToThread(worker_thread_);
+    FileNetworkTask *ftask =
+        new FileNetworkTask(SEAFILE_NETWORK_TASK_DOWNLOAD, network_task, this,
+                            repo_id, path, file_name, file_location);
+    ftask->setParent(this);
+
+    network_task->moveToThread(worker_thread_);
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));
 
-    connect(this, SIGNAL(run(int)), ftask, SLOT(onRun(int)));
-    connect(ftask, SIGNAL(start()), task, SIGNAL(start()));
-    connect(ftask, SIGNAL(cancel()), task, SIGNAL(cancel()));
-
-    connect(task, SIGNAL(started()), ftask, SLOT(onStarted()));
-    connect(task, SIGNAL(updateProgress(qint64, qint64)),
-            ftask, SLOT(onUpdateProgress(qint64, qint64)));
-    connect(task, SIGNAL(prefetchOid(const QString &)),
-            ftask, SLOT(onPrefetchOid(const QString &)));
-    connect(task, SIGNAL(fileLocationChanged(const QString &)),
-            ftask, SLOT(onFileLocationChanged(const QString &)));
-    connect(task, SIGNAL(aborted()), ftask, SLOT(onAborted()));
-    connect(task, SIGNAL(finished()), ftask, SLOT(onFinished()));
-
-    (*ftask).status = SEAFILE_NETWORK_TASK_STATUS_FRESH;
     worker_thread_->start();
-    emit run(num);
-    return num;
+
+    // shot once
+    connect(this, SIGNAL(run()), ftask, SLOT(onRun()));
+    emit run();
+    disconnect(this, SIGNAL(run()), ftask, SLOT(onRun()));
+    return ftask;
 }
 
 
-int FileNetworkManager::createUploadTask(const QString &repo_id,
+FileNetworkTask* FileNetworkManager::createUploadTask(const QString &repo_id,
                                            const QString &path,
                                            const QString &file_name,
                                            const QString &update_file_path)
 {
     QString file_location(QFileInfo(update_file_path).absoluteFilePath());
-    FileNetworkTask* ftask = \
-           new FileNetworkTask(repo_id, path, file_name, file_location);
-    const int num = addTask(ftask);
-    (*ftask).task_num = num;
-    (*ftask).type = SEAFILE_NETWORK_TASK_UPLOAD;
 
-    SeafileUploadTask* task = \
-      builder_.createUploadTask(account_, repo_id,
+    SeafileUploadTask* network_task = \
+      network_task_builder_.createUploadTask(account_, repo_id,
                                   path, file_name, file_location);
+    network_task->setParent(worker_thread_);
 
-    task->moveToThread(worker_thread_);
+    FileNetworkTask* ftask = \
+        new FileNetworkTask(SEAFILE_NETWORK_TASK_UPLOAD, network_task, this,
+                           repo_id, path, file_name, file_location);
+    ftask->setParent(this);
+
+    network_task->moveToThread(worker_thread_);
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));
 
-    connect(this, SIGNAL(run(int)), ftask, SLOT(onRun(int)));
-    connect(ftask, SIGNAL(start()), task, SIGNAL(start()));
-    connect(ftask, SIGNAL(cancel()), task, SIGNAL(cancel()));
-
-    connect(task, SIGNAL(started()), ftask, SLOT(onStarted()));
-    connect(task, SIGNAL(updateProgress(qint64, qint64)),
-            ftask, SLOT(onUpdateProgress(qint64, qint64)));
-    connect(task, SIGNAL(aborted()), ftask, SLOT(onAborted()));
-    connect(task, SIGNAL(finished()), ftask, SLOT(onFinished()));
-
-    (*ftask).status = SEAFILE_NETWORK_TASK_STATUS_FRESH;
     worker_thread_->start();
-    emit run(num);
-    return num;
+
+    // shot once
+    connect(this, SIGNAL(run()), ftask, SLOT(onRun()));
+    emit run();
+    disconnect(this, SIGNAL(run()), ftask, SLOT(onRun()));
+
+    return ftask;
 }

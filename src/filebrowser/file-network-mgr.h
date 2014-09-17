@@ -1,157 +1,235 @@
 #ifndef SEAFILE_CLIENT_FILE_BROWSER_NETWORK_MANAGER_H
 #define SEAFILE_CLIENT_FILE_BROWSER_NETWORK_MANAGER_H
 
-#include <QList>
 #include <QDir>
+#include <QHash>
 
-#include "account.h"
 #include "network/task-builder.h"
 #include "network/task.h"
+#include "account.h"
 
 class ApiError;
 class QThread;
+class FileNetworkManager;
 class FileNetworkTask : public QObject {
     Q_OBJECT;
+
+    QString repo_id_;
+    QString path_;
+    QString file_name_;
+    QString file_location_;
+    QString oid_;
+    qint64 processed_bytes_;
+    qint64 total_bytes_;
+    SeafileNetworkTaskStatus status_;
+    SeafileNetworkTaskType type_;
+    SeafileNetworkTask *network_task_;
+    FileNetworkManager *network_mgr_;
+
+    inline void onFastForwardProgress();
 
 signals:
     void start();
     void cancel();
+    void resume();
 
     void started();
-    void updateProgress(qint64 processed_bytes_, qint64 total_bytes_);
+    void updateProgress(qint64 processed_bytes, qint64 total_bytes);
+    void prefetchOid(const QString &oid);
     void aborted();
     void finished();
 private slots:
-    inline void onRun(int num);
+    inline void onRun();
     inline void onCancel();
 
     inline void onStarted();
-    inline void onUpdateProgress(qint64 processed_bytes_, qint64 total_bytes_);
-    inline void onFileLocationChanged(const QString &_file_location);
-    inline void onPrefetchOid(const QString &_oid);
+    inline void onUpdateProgress(qint64 processed_bytes, qint64 total_bytes);
+    inline void onFileLocationChanged(const QString &file_location);
+    inline void onPrefetchOid(const QString &oid);
+    inline void onPrefetchFinished();
     inline void onAborted();
     inline void onFinished();
 
 public:
-  FileNetworkTask(const QString &repo_id_,
-                  const QString &path_,
-                  const QString &file_name_,
-                  const QString &file_location_)
-    : task_num(-1),
-    repo_id(repo_id_),
-    path(path_),
-    file_name(file_name_),
-    file_location(file_location_),
-    processed_bytes(0), total_bytes(0),
-    status(SEAFILE_NETWORK_TASK_STATUS_UNKNOWN),
-    type(SEAFILE_NETWORK_TASK_UNKNOWN) {}
-    int task_num;
-    QString repo_id;
-    QString path;
-    QString file_name;
-    QString file_location;
-    QString oid;
-    qint64 processed_bytes;
-    qint64 total_bytes;
-    SeafileNetworkTaskStatus status;
-    SeafileNetworkTaskType type;
+    FileNetworkTask(const SeafileNetworkTaskType type,
+                    SeafileNetworkTask *network_task,
+                    FileNetworkManager *network_mgr,
+                    const QString &repo_id,
+                    const QString &path,
+                    const QString &file_name,
+                    const QString &file_location)
+    :   repo_id_(repo_id), path_(path), file_name_(file_name),
+        file_location_(file_location), processed_bytes_(0), total_bytes_(0),
+        status_(SEAFILE_NETWORK_TASK_STATUS_FRESH),
+        type_(type), network_task_(network_task), network_mgr_(network_mgr)
+    {
+        if (network_task_ == NULL)
+            return;
+        network_task_->setParent(this);
+
+        connect(this, SIGNAL(start()), network_task, SIGNAL(start()));
+        connect(this, SIGNAL(resume()), network_task, SIGNAL(resume()));
+        connect(this, SIGNAL(cancel()), network_task, SIGNAL(cancel()));
+
+        connect(network_task, SIGNAL(prefetchFinished()),
+                this, SLOT(onPrefetchFinished()));
+
+        connect(network_task, SIGNAL(started()), this, SLOT(onStarted()));
+        connect(network_task, SIGNAL(updateProgress(qint64, qint64)),
+                this, SLOT(onUpdateProgress(qint64, qint64)));
+        connect(network_task, SIGNAL(aborted()), this, SLOT(onAborted()));
+        connect(network_task, SIGNAL(finished()), this, SLOT(onFinished()));
+
+        if (type == SEAFILE_NETWORK_TASK_DOWNLOAD) {
+             connect(network_task, SIGNAL(prefetchOid(const QString &)),
+                     this, SLOT(onPrefetchOid(const QString &)));
+             connect(network_task, SIGNAL(fileLocationChanged(const QString &)),
+                     this, SLOT(onFileLocationChanged(const QString &)));
+        }
+    }
+
+    QString path() const { return path_; }
+    QString fileName() const { return file_name_; }
+    QString fileLocation() const { return file_location_; }
+
+    QString oid() const { return oid_; }
+    void setOid(const QString &oid) { oid_ = oid; }
+
+    qint64 processedBytes() const { return processed_bytes_; }
+    qint64 totalBytes() const { return total_bytes_; }
+    SeafileNetworkTaskStatus status() const { return status_; }
+    SeafileNetworkTaskType type() const { return type_; }
+    FileNetworkManager* networkMgr() const { return network_mgr_; }
 };
 
 class FileNetworkManager : public QObject {
     Q_OBJECT
+    friend class FileNetworkTask;
 public:
     FileNetworkManager(const Account &account);
 
-    int createDownloadTask(const QString &repo_id,
-                               const QString &path,
-                               const QString &file_name);
-    int createDownloadTask(const QString &repo_id,
-                               const QString &path,
-                               const QString &file_name,
-                               const QString &revision);
+    FileNetworkTask* createDownloadTask(const QString &repo_id,
+                           const QString &path,
+                           const QString &file_name,
+                           const QString &oid = QString());
 
-    int createUploadTask(const QString &repo_id,
+    FileNetworkTask* createUploadTask(const QString &repo_id,
                                const QString &path,
                                const QString &file_name,
                                const QString &upload_file_path);
 
-    FileNetworkTask* getTask(int num) {
-        return tasks_[num];
-    }
-
     ~FileNetworkManager();
 
 signals:
-    void run(int num);
+    void run();
 
 private:
-    inline int addTask(FileNetworkTask* task);
+    int addTask(FileNetworkTask* task);
 
-    Account account_;
+    const Account account_;
 
     QDir file_cache_dir_;
     QString file_cache_path_;
 
-    QList<FileNetworkTask*> tasks_;
+    QHash<QString, FileNetworkTask*> cached_tasks_;
 
-    SeafileNetworkTaskBuilder builder_;
+    SeafileNetworkTaskBuilder network_task_builder_;
 
     QThread *worker_thread_;
 };
 
-void FileNetworkTask::onRun(int num)
+void FileNetworkTask::onRun()
 {
-    if(num == task_num)
+    if (network_task_ !=NULL)
         emit start();
+    else
+        onFastForwardProgress();
 }
 
 void FileNetworkTask::onCancel()
 {
-    status = SEAFILE_NETWORK_TASK_STATUS_CANCELING;
+    status_ = SEAFILE_NETWORK_TASK_STATUS_CANCELING;
     emit cancel();
 }
 
 void FileNetworkTask::onStarted()
 {
-    status = SEAFILE_NETWORK_TASK_STATUS_PROCESSING;
+    status_ = SEAFILE_NETWORK_TASK_STATUS_PROCESSING;
     emit started();
 }
 
-void FileNetworkTask::onUpdateProgress(qint64 processed_bytes_,
-                                            qint64 total_bytes_)
+void FileNetworkTask::onUpdateProgress(qint64 processed_bytes,
+                                            qint64 total_bytes)
 {
-    processed_bytes = processed_bytes_;
-    total_bytes = total_bytes_;
-    emit updateProgress(processed_bytes, total_bytes);
+    processed_bytes_ = processed_bytes;
+    total_bytes_ = total_bytes;
+    emit updateProgress(processed_bytes_, total_bytes_);
 }
 
-void FileNetworkTask::onFileLocationChanged(const QString &_file_location)
+void FileNetworkTask::onFileLocationChanged(const QString &file_location)
 {
-    file_location = _file_location;
+    file_location_ = file_location;
 }
 
-void FileNetworkTask::onPrefetchOid(const QString &_oid)
+void FileNetworkTask::onPrefetchOid(const QString &oid)
 {
-    oid = _oid;
+    oid_ = oid;
+    emit prefetchOid(oid_);
+}
+
+void FileNetworkTask::onFastForwardProgress()
+{
+    emit started();
+    emit updateProgress(total_bytes_ - 1, total_bytes_);
+    emit finished();
+    status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+}
+
+void FileNetworkTask::onPrefetchFinished()
+{
+    if (type_ ==  SEAFILE_NETWORK_TASK_UPLOAD)
+        emit resume();
+    if (type_ ==  SEAFILE_NETWORK_TASK_DOWNLOAD) {
+        FileNetworkTask *associated_task;
+        if (!network_mgr_->cached_tasks_.contains(oid_) ||
+            !(associated_task = network_mgr_->cached_tasks_[oid_]) ||
+            associated_task->oid_ != oid_ ||
+            associated_task->status_ != SEAFILE_NETWORK_TASK_STATUS_FINISHED ||
+            !QFileInfo(associated_task->file_location_).exists()
+            ) {
+            // missed cache
+            emit resume();
+            return;
+        }
+        // hit the cache, clean up network task
+        disconnect(network_task_, 0, this, 0);
+        onCancel();
+        network_task_ = NULL;
+        // copy attributes from previous task
+        file_location_ = associated_task->file_location_; //TODO: copy file
+        total_bytes_ = associated_task->total_bytes_;
+        processed_bytes_ = total_bytes_;
+        status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+        // fast-forward progress dialog
+        onFastForwardProgress();
+    }
 }
 
 void FileNetworkTask::onAborted()
 {
-    status = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
+    disconnect(network_task_, 0, this, 0);
+    status_ = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
+    network_task_ = NULL;
     emit aborted();
 }
 
 void FileNetworkTask::onFinished()
 {
-    status = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+    disconnect(network_task_, 0, this, 0);
+    network_mgr_->cached_tasks_.insert(oid_, this);
+    status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
+    network_task_ = NULL;
     emit finished();
 }
-
-int FileNetworkManager::addTask(FileNetworkTask* task)
-{
-    tasks_.push_back(task);
-    return tasks_.size() - 1;
-}
-
 
 #endif //SEAFILE_CLIENT_FILE_BROWSER_NETWORK_MANAGER_H

@@ -315,10 +315,9 @@ void FileBrowserDialog::onFileUpload()
                                                  QDir::home().absolutePath());
     if (file_name.isNull())
         return;
-    int task_num = \
+    const FileNetworkTask* task = \
         file_network_mgr_->createUploadTask(repo_.id, path_,
                            QFileInfo(file_name).fileName(), file_name);
-    const FileNetworkTask* task = file_network_mgr_->getTask(task_num);
     connect(task, SIGNAL(finished()), this, SIGNAL(dirChangedForcely()));
     file_progress_dialog_->setTask(task);
     file_progress_dialog_->show();
@@ -330,9 +329,9 @@ void FileBrowserDialog::onFileDownload()
         return;
     if (selected_dirent_->isDir()) //no implemented yet
         return;
-    int task_num = file_network_mgr_->createDownloadTask(repo_.id, path_,
-                                                selected_dirent_->name);
-    const FileNetworkTask* task = file_network_mgr_->getTask(task_num);
+    const FileNetworkTask* task = file_network_mgr_->createDownloadTask(repo_.id, path_,
+                                                selected_dirent_->name,
+                                                selected_dirent_->id);
     file_progress_dialog_->setTask(task);
     file_progress_dialog_->show();
 }

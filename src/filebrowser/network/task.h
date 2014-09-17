@@ -52,6 +52,7 @@ public:
 signals:
     void start();
     void cancel();
+    void resume();
     void prefetchAborted();
     void prefetchFinished();
     void prefetchOid(const QString &oid);
@@ -112,11 +113,10 @@ signals:
     void finished();
 
 private slots:
-    void startTask();
-
     void httpUpdateProgress(qint64 processed_bytes, qint64 total_bytes);
     void httpProcessReady();
     void httpFinished();
+    void onStartDownload(); // entry for beginning of download
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
     void onClose();
@@ -155,10 +155,9 @@ signals:
     void finished();
 
 private slots:
-    void startTask();
-
     void httpUpdateProgress(qint64 processed_bytes, qint64 total_bytes);
     void httpFinished();
+    void onStartUpload(); //entry
     void onRedirected(const QUrl &new_url);
     void onAborted(SeafileNetworkTaskError error = SEAFILE_NETWORK_TASK_UNKNOWN_ERROR);
     void onClose();
