@@ -40,10 +40,14 @@ FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
             associated_task->oid() == oid &&
             associated_task->status() == SEAFILE_NETWORK_TASK_STATUS_FINISHED &&
             QFileInfo(associated_task->fileLocation()).exists()) {
-            //TODO : duplicate task here
+            //TODO : duplicate task and copy file here
             return associated_task;
         }
     }
+
+    // attempt to remove conflicting file
+    if (QFileInfo(file_location).isFile())
+        QFile::remove(file_location);
 
     SeafileDownloadTask *network_task =
         network_task_builder_.createDownloadTask(account_, repo_id, path,

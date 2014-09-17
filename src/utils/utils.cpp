@@ -480,6 +480,21 @@ QUrl urlJoin(const QUrl& head, const QString& tail)
     return QUrl(a + b);
 }
 
+void removeDirRecursively(const QString &path)
+{
+    QFileInfo file_info(path);
+    if (file_info.isDir()) {
+        QDir dir(path);
+        QStringList file_list = dir.entryList();
+        for (int i = 0; i < file_list.count(); ++i) {
+            removeDirRecursively(file_list.at(i));
+        }
+        removeDirRecursively(path);
+    } else {
+        QFile::remove(path);
+    }
+}
+
 QString dumpHexPresentation(const QByteArray &bytes)
 {
     if (bytes.size() < 2)

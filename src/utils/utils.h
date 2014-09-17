@@ -60,6 +60,8 @@ QString md5(const QString& s);
 
 QUrl urlJoin(const QUrl& url, const QString& tail);
 
+void removeDirRecursively(const QString &path);
+
 QString dumpHexPresentation(const QByteArray &bytes);
 
 QString dumpSslErrors(const QList<QSslError>&);
