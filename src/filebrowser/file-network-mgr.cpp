@@ -58,12 +58,6 @@ FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
     network_task->moveToThread(worker_thread_);
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));
 
-    worker_thread_->start();
-
-    // shot once
-    connect(this, SIGNAL(run()), ftask, SLOT(onRun()));
-    emit run();
-    disconnect(this, SIGNAL(run()), ftask, SLOT(onRun()));
     return ftask;
 }
 
@@ -88,12 +82,14 @@ FileNetworkTask* FileNetworkManager::createUploadTask(const QString &repo_id,
     network_task->moveToThread(worker_thread_);
     connect(worker_thread_, SIGNAL(finished()), ftask, SLOT(onCancel()));
 
-    worker_thread_->start();
-
-    // shot once
-    connect(this, SIGNAL(run()), ftask, SLOT(onRun()));
-    emit run();
-    disconnect(this, SIGNAL(run()), ftask, SLOT(onRun()));
-
     return ftask;
+}
+
+void FileNetworkManager::runTask(FileNetworkTask* task)
+{
+    worker_thread_->start();
+    // shot once
+    connect(this, SIGNAL(run()), task, SLOT(onRun()));
+    emit run();
+    disconnect(this, SIGNAL(run()), task, SLOT(onRun()));
 }

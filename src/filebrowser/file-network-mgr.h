@@ -107,6 +107,7 @@ class FileNetworkManager : public QObject {
     friend class FileNetworkTask;
 public:
     FileNetworkManager(const Account &account);
+    ~FileNetworkManager();
 
     FileNetworkTask* createDownloadTask(const QString &repo_id,
                            const QString &path,
@@ -118,7 +119,7 @@ public:
                                const QString &file_name,
                                const QString &upload_file_path);
 
-    ~FileNetworkManager();
+    void runTask(FileNetworkTask* task);
 
 signals:
     void run();
