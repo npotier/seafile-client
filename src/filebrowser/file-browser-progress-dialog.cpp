@@ -71,8 +71,8 @@ void FileBrowserProgressDialog::onUpdateProgress(qint64 processed_bytes, qint64 
     setValue(processed_bytes);
 
     more_details_label_->setText(tr("%1 of %2")
-                            .arg(::readableFileSize(processed_bytes))
-                            .arg(::readableFileSize(total_bytes)));
+                            .arg(::readableFileSizeV2(processed_bytes))
+                            .arg(::readableFileSizeV2(total_bytes)));
 }
 void FileBrowserProgressDialog::onAborted()
 {

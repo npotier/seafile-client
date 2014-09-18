@@ -90,7 +90,10 @@ void SeafileNetworkTask::onCancel()
 {
     qDebug() << "[network task]" << url_.toEncoded()
       << "cancelled";
-    if (reply_ && status_ != SEAFILE_NETWORK_TASK_STATUS_ERROR) {
+    if (reply_ &&
+        status_ != SEAFILE_NETWORK_TASK_STATUS_ERROR &&
+        status_ != SEAFILE_NETWORK_TASK_STATUS_ABORTED &&
+        status_ != SEAFILE_NETWORK_TASK_STATUS_CANCELING) {
         reply_->abort();
         status_ = SEAFILE_NETWORK_TASK_STATUS_CANCELING;
     }
@@ -167,6 +170,12 @@ SeafileDownloadTask::SeafileDownloadTask(const QString &token,
 SeafileDownloadTask::~SeafileDownloadTask()
 {
     onClose();
+    if (file_) {
+        file_->close();
+        file_->remove();
+        delete file_;
+        file_ = NULL;
+    }
 }
 
 void SeafileDownloadTask::onClose()
@@ -273,12 +282,6 @@ void SeafileDownloadTask::onRedirected(const QUrl &new_url)
 void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
 {
     SeafileNetworkTask::onAborted(error);
-    if (file_) {
-        file_->close();
-        file_->remove();
-        delete file_;
-        file_ = NULL;
-    }
     emit aborted();
     onClose();
     delete this;
@@ -303,6 +306,11 @@ SeafileUploadTask::SeafileUploadTask(const QString &token,
 SeafileUploadTask::~SeafileUploadTask()
 {
     onClose();
+    if (file_) {
+        file_->close();
+        delete file_;
+        file_ = NULL;
+    }
 }
 
 void SeafileUploadTask::onClose()
@@ -405,11 +413,6 @@ void SeafileUploadTask::onRedirected(const QUrl &new_url)
 void SeafileUploadTask::onAborted(SeafileNetworkTaskError error)
 {
     SeafileNetworkTask::onAborted(error);
-    if (file_) {
-        file_->close();
-        delete file_;
-        file_ = NULL;
-    }
     emit aborted();
     onClose();
     delete this;

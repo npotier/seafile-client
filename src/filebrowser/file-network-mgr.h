@@ -65,7 +65,6 @@ public:
     {
         if (network_task_ == NULL)
             return;
-        network_task_->setParent(this);
 
         connect(this, SIGNAL(start()), network_task, SIGNAL(start()));
         connect(this, SIGNAL(resume()), network_task, SIGNAL(resume()));
@@ -199,6 +198,7 @@ void FileNetworkTask::onPrefetchFinished()
             !QFileInfo(associated_task->file_location_).exists()
             ) {
             // missed cache
+            network_mgr_->cached_tasks_.remove(oid_);
             emit resume();
             return;
         }

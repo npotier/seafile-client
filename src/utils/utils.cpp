@@ -461,6 +461,52 @@ QString readableFileSize(qint64 size)
     return QString::number(size) + str;
 }
 
+QString readableFileSizeV2(qint64 size)
+{
+    if (size <= 0)
+        return "0 B";
+    //max size is 6 x 7 -1
+    const int bufsize = 50;
+    char buf[bufsize];
+
+    int size_unit_b = size & 1023; //B
+    int size_unit_k = size >> 10 & 1023; //K
+    int size_unit_m = size >> 20 & 1023; //M
+    int size_unit_g = size >> 30 & 1023; //G
+    int size_unit_t = size >> 40 & 1023; //T
+    int size_unit_p = size >> 50 & 1023; //P
+    //omit all size large than 1PB
+
+    if (size_unit_p)
+        snprintf(buf, bufsize - 1,
+                 "%dP %3dT %3dG %3dM %3dK %3dB",
+                 size_unit_p, size_unit_t, size_unit_g,
+                 size_unit_m, size_unit_k, size_unit_b);
+    else if (size_unit_t)
+        snprintf(buf, bufsize - 1,
+                 "%dT %3dG %3dM %3dK %3dB",
+                 size_unit_t, size_unit_g,
+                 size_unit_m, size_unit_k, size_unit_b);
+    else if (size_unit_g)
+        snprintf(buf, bufsize - 1,
+                 "%dG %3dM %3dK %3dB",
+                 size_unit_g, size_unit_m, size_unit_k, size_unit_b);
+    else if (size_unit_m)
+        snprintf(buf, bufsize - 1,
+                 "%dM %3dK %3dB",
+                 size_unit_m, size_unit_k, size_unit_b);
+    else if (size_unit_k)
+        snprintf(buf, bufsize - 1,
+                 "%dK %3dB",
+                 size_unit_k, size_unit_b);
+    else
+        snprintf(buf, bufsize - 1,
+                 "%dB",
+                 size_unit_b);
+
+    return buf; // return by a new QString item
+}
+
 QString md5(const QString& s)
 {
     return QCryptographicHash::hash(s.toUtf8(), QCryptographicHash::Md5).toHex();

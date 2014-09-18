@@ -311,8 +311,7 @@ void FileBrowserDialog::onFileInvolved(const SeafDirent& file)
 void FileBrowserDialog::onFileUpload()
 {
     QString file_name = QFileDialog::getOpenFileName(this,
-                                                 tr("Select file to upload"),
-                                                 QDir::home().absolutePath());
+                                                 tr("Select file to upload"));
     if (file_name.isNull())
         return;
     FileNetworkTask* task = \

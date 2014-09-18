@@ -43,6 +43,7 @@ FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
             //TODO : duplicate task and copy file here
             return associated_task;
         }
+        cached_tasks_.remove(oid);
     }
 
     // attempt to remove conflicting file
@@ -52,8 +53,6 @@ FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
     SeafileDownloadTask *network_task =
         network_task_builder_.createDownloadTask(account_, repo_id, path,
                                                  file_name, file_location);
-    network_task->setParent(worker_thread_);
-
     FileNetworkTask *ftask =
         new FileNetworkTask(SEAFILE_NETWORK_TASK_DOWNLOAD, network_task, this,
                             repo_id, path, file_name, file_location);
@@ -76,7 +75,6 @@ FileNetworkTask* FileNetworkManager::createUploadTask(const QString &repo_id,
     SeafileUploadTask* network_task = \
       network_task_builder_.createUploadTask(account_, repo_id,
                                   path, file_name, file_location);
-    network_task->setParent(worker_thread_);
 
     FileNetworkTask* ftask = \
         new FileNetworkTask(SEAFILE_NETWORK_TASK_UPLOAD, network_task, this,
