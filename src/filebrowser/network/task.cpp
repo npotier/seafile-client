@@ -172,7 +172,6 @@ SeafileDownloadTask::~SeafileDownloadTask()
     onClose();
     if (file_) {
         file_->close();
-        file_->remove();
         delete file_;
         file_ = NULL;
     }
@@ -284,6 +283,12 @@ void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
     SeafileNetworkTask::onAborted(error);
     emit aborted();
     onClose();
+    if (file_) {
+        file_->close();
+        file_->remove();
+        delete file_;
+        file_ = NULL;
+    }
     delete this;
 }
 

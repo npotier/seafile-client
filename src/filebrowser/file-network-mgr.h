@@ -218,7 +218,6 @@ void FileNetworkTask::onPrefetchFinished()
 
 void FileNetworkTask::onAborted()
 {
-    disconnect(network_task_, 0, this, 0);
     status_ = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
     network_task_ = NULL;
     emit aborted();
@@ -226,7 +225,6 @@ void FileNetworkTask::onAborted()
 
 void FileNetworkTask::onFinished()
 {
-    disconnect(network_task_, 0, this, 0);
     network_mgr_->cached_tasks_.insert(oid_, this);
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     network_task_ = NULL;
