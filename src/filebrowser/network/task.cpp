@@ -396,7 +396,7 @@ void SeafileUploadTask::httpFinished()
     qDebug() << "[upload task]" << url_.toEncoded() << "finished";
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
-    delete this;
+    this->deleteLater();
 }
 
 void SeafileUploadTask::onRedirected(const QUrl &new_url)
@@ -411,6 +411,6 @@ void SeafileUploadTask::onAborted(SeafileNetworkTaskError error)
 {
     SeafileNetworkTask::onAborted(error);
     emit aborted();
-    delete this;
+    this->deleteLater();
 }
 
