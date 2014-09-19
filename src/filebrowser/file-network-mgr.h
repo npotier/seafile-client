@@ -218,7 +218,7 @@ void FileNetworkTask::onPrefetchFinished()
 
 void FileNetworkTask::onAborted()
 {
-    status_ = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
+    status_ = SEAFILE_NETWORK_TASK_STATUS_ERROR;
     network_task_ = NULL;
     emit aborted();
 }

@@ -30,7 +30,6 @@ SeafileNetworkTask::SeafileNetworkTask(const QString &token,
 #endif
     connect(this, SIGNAL(start()), this, SLOT(onStart()));
     connect(this, SIGNAL(cancel()), this, SLOT(onCancel()));
-
 }
 #if !defined(QT_NO_OPENSSL)
 void SeafileNetworkTask::sslErrors(QNetworkReply*, const QList<QSslError> &errors)
@@ -72,7 +71,7 @@ void SeafileNetworkTask::onAborted(SeafileNetworkTaskError error)
 {
     qDebug() << "[network task]" << url_.toEncoded()
       << " is aborted due to error" << error;
-    status_ = SEAFILE_NETWORK_TASK_STATUS_ABORTED;
+    status_ = SEAFILE_NETWORK_TASK_STATUS_ERROR;
     reply_->deleteLater();
     reply_ = NULL;
 }
@@ -88,11 +87,9 @@ void SeafileNetworkTask::onStart()
 
 void SeafileNetworkTask::onCancel()
 {
-    qDebug() << "[network task]" << url_.toEncoded()
-      << "cancelled";
+    qDebug() << "[network task]" << url_.toEncoded() << "cancelled";
     if (reply_ &&
         status_ != SEAFILE_NETWORK_TASK_STATUS_ERROR &&
-        status_ != SEAFILE_NETWORK_TASK_STATUS_ABORTED &&
         status_ != SEAFILE_NETWORK_TASK_STATUS_CANCELING) {
         reply_->abort();
         status_ = SEAFILE_NETWORK_TASK_STATUS_CANCELING;
@@ -146,10 +143,8 @@ void SeafileNetworkTask::onPrefetchFinished()
         emit prefetchOid(reply_->rawHeader("oid"));
     onRedirected(new_url);
     status_ = SEAFILE_NETWORK_TASK_STATUS_PREFETCHED;
-    if (reply_) {
-        reply_->deleteLater();
-        reply_ = NULL;
-    }
+    reply_->deleteLater();
+    reply_ = NULL;
     emit prefetchFinished();
 }
 
@@ -265,8 +260,7 @@ void SeafileDownloadTask::httpFinished()
     qDebug() << "[download task]" << url_.toEncoded() << "finished";
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
-    onClose();
-    delete this;
+    this->deleteLater();
 }
 
 void SeafileDownloadTask::onRedirected(const QUrl &new_url)
@@ -282,14 +276,13 @@ void SeafileDownloadTask::onAborted(SeafileNetworkTaskError error)
 {
     SeafileNetworkTask::onAborted(error);
     emit aborted();
-    onClose();
     if (file_) {
         file_->close();
         file_->remove();
         delete file_;
         file_ = NULL;
     }
-    delete this;
+    this->deleteLater();
 }
 
 SeafileUploadTask::SeafileUploadTask(const QString &token,
@@ -403,7 +396,6 @@ void SeafileUploadTask::httpFinished()
     qDebug() << "[upload task]" << url_.toEncoded() << "finished";
     status_ = SEAFILE_NETWORK_TASK_STATUS_FINISHED;
     emit finished();
-    onClose();
     delete this;
 }
 
@@ -419,7 +411,6 @@ void SeafileUploadTask::onAborted(SeafileNetworkTaskError error)
 {
     SeafileNetworkTask::onAborted(error);
     emit aborted();
-    onClose();
     delete this;
 }
 
