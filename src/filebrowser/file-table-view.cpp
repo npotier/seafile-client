@@ -35,10 +35,7 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     setItemDelegate(delegate);
     //setMouseTracking(true); //disable hover effect temporary
 
-    setDragEnabled(true);
-    setDropIndicatorShown(true);
     setAcceptDrops(true);
-    viewport()->setAcceptDrops(true);
     setDragDropMode(QAbstractItemView::DropOnly);
 }
 
@@ -91,23 +88,15 @@ void FileTableView::dropEvent(QDropEvent *event)
         QString file_name = url.toLocalFile();
 
         if(file_name.isEmpty())
-            return;
-        qDebug() << "drop event detected: " << file_name;
+            continue;
+
+        if(!QFileInfo(file_name).isFile())
+            continue;
 
         emit dropFile(file_name);
     }
 
-    event->acceptProposedAction();
-}
-
-void FileTableView::dragEnterEvent(QDragEnterEvent *event)
-{
-    //only handle external source currently
-    if(event->source() != NULL)
-        return;
-
-    if(event->mimeData()->hasFormat("text/uri-list"))
-        event->acceptProposedAction();
+    event->accept();
 }
 
 void FileTableView::dragMoveEvent(QDragMoveEvent *event)
@@ -116,8 +105,21 @@ void FileTableView::dragMoveEvent(QDragMoveEvent *event)
     if(event->source() != NULL)
         return;
 
-    event->acceptProposedAction();
+    event->accept();
 }
+
+void FileTableView::dragEnterEvent(QDragEnterEvent *event)
+{
+    //only handle external source currently
+    if(event->source() != NULL)
+        return;
+
+    event->setDropAction(Qt::CopyAction);
+
+    if(event->mimeData()->hasFormat("text/uri-list"))
+        event->accept();
+}
+
 
 void FileTableView::selectionChanged(const QItemSelection &selected,
                                      const QItemSelection &deselected)
