@@ -35,7 +35,11 @@ FileTableView::FileTableView(const ServerRepo& repo, QWidget *parent)
     setItemDelegate(delegate);
     //setMouseTracking(true); //disable hover effect temporary
 
+    setDragEnabled(true);
+    setDropIndicatorShown(true);
     setAcceptDrops(true);
+    viewport()->setAcceptDrops(true);
+    setDragDropMode(QAbstractItemView::DropOnly);
 }
 
 QStyleOptionViewItem FileTableView::viewOptions () const
@@ -101,9 +105,18 @@ void FileTableView::dragEnterEvent(QDragEnterEvent *event)
     //only handle external source currently
     if(event->source() != NULL)
         return;
-    if(event->mimeData()->hasFormat("text/uri-list")) {
+
+    if(event->mimeData()->hasFormat("text/uri-list"))
         event->acceptProposedAction();
-    }
+}
+
+void FileTableView::dragMoveEvent(QDragMoveEvent *event)
+{
+    //only handle external source currently
+    if(event->source() != NULL)
+        return;
+
+    event->acceptProposedAction();
 }
 
 void FileTableView::selectionChanged(const QItemSelection &selected,

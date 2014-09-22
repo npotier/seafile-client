@@ -153,14 +153,6 @@ const SeafDirent FileTableModel::direntAt(int index) const
     return dirents_[index];
 }
 
-
-Qt::ItemFlags FileTableModel::flags (const QModelIndex & index) const
-{
-    Qt::ItemFlags flags = QAbstractTableModel::flags(index);
-
-    return flags | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled;
-}
-
 void FileTableModel::setMouseOver(const int row)
 {
     const int curr_hovered = curr_hovered_;
@@ -179,6 +171,11 @@ void FileTableModel::setMouseOver(const int row)
 const SeafDirent *FileTableModel::selectedDirent() const
 {
     return selected_dirent_;
+}
+
+Qt::DropActions FileTableModel::supportedDropActions() const
+{
+    return Qt::CopyAction | Qt::MoveAction;
 }
 
 void FileTableModel::onSelectionChanged(const int row)

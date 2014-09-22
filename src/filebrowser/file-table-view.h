@@ -26,6 +26,7 @@ private:
 
     void dropEvent(QDropEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
 
     void selectionChanged(const QItemSelection &selected,
                           const QItemSelection &deselected);

@@ -29,11 +29,11 @@ public:
 
     const SeafDirent direntAt(int index) const;
 
-    Qt::ItemFlags flags ( const QModelIndex & index ) const;
-
     void setMouseOver(const int row);
 
     const SeafDirent *selectedDirent() const;
+
+    Qt::DropActions supportedDropActions() const;
 
 private slots:
     void onSelectionChanged(const int row);
