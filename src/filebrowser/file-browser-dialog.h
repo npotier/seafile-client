@@ -52,7 +52,7 @@ private slots:
     void onBackwardActionClicked();
     void onForwardActionClicked();
     void onNavigateHomeActionClicked();
-    void onFileUpload();
+    void onFileUpload(const QString &file_location = "");
     void onFileDownload();
     void onOpenCacheDir();
     void onDirInvolved(const SeafDirent& dirent);

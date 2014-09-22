@@ -14,6 +14,7 @@ public:
 
 signals:
     void direntClicked(const SeafDirent& dirent);
+    void dropFile(const QString &file_name);
     void selectionChanged(const int row);
 
 private slots:

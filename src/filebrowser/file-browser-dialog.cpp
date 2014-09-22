@@ -80,6 +80,9 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
     connect(table_view_, SIGNAL(direntClicked(const SeafDirent&)),
             this, SLOT(onDirentClicked(const SeafDirent&)));
 
+    connect(table_view_, SIGNAL(dropFile(const QString &)),
+            this, SLOT(onFileUpload(const QString &)));
+
     connect(data_mgr_, SIGNAL(getDirentsSuccess(const QList<SeafDirent>&)),
             this, SLOT(onGetDirentsSuccess(const QList<SeafDirent>&)));
 
@@ -308,11 +311,13 @@ void FileBrowserDialog::onFileInvolved(const SeafDirent& file)
     onFileDownload();
 }
 
-void FileBrowserDialog::onFileUpload()
+void FileBrowserDialog::onFileUpload(const QString &_file_name)
 {
-    QString file_name = QFileDialog::getOpenFileName(this,
+    QString file_name(_file_name);
+    if (file_name.isEmpty())
+        file_name = QFileDialog::getOpenFileName(this,
                                                  tr("Select file to upload"));
-    if (file_name.isNull())
+    if (file_name.isEmpty())
         return;
     FileNetworkTask* task = \
         file_network_mgr_->createUploadTask(repo_.id, path_,

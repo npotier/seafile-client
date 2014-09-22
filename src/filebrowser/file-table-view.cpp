@@ -78,18 +78,19 @@ void FileTableView::leaveEvent(QEvent *event)
 void FileTableView::dropEvent(QDropEvent *event)
 {
     QList<QUrl> urls = event->mimeData()->urls();
-    qDebug() << event->mimeData()->formats();
 
     if(urls.isEmpty())
         return;
 
     foreach(const QUrl &url, urls)
     {
-        QString fileName = url.toLocalFile();
+        QString file_name = url.toLocalFile();
 
-        if(fileName.isEmpty())
+        if(file_name.isEmpty())
             return;
-        qDebug() << "drop event detected: " << fileName;
+        qDebug() << "drop event detected: " << file_name;
+
+        emit dropFile(file_name);
     }
 
     event->acceptProposedAction();
@@ -101,8 +102,7 @@ void FileTableView::dragEnterEvent(QDragEnterEvent *event)
     if(event->source() != NULL)
         return;
     if(event->mimeData()->hasFormat("text/uri-list")) {
-        event->setDropAction(Qt::CopyAction);
-        event->accept();
+        event->acceptProposedAction();
     }
 }
 
