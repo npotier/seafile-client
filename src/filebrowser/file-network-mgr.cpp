@@ -9,11 +9,13 @@
 FileNetworkManager::FileNetworkManager(const Account &account)
     : account_(account),
     file_cache_dir_(defaultFileCachePath()),
-    file_cache_path_(defaultFileCachePath())
+    file_cache_path_(defaultFileCachePath()),
+    cache_mgr_(FileCacheManager::getInstance())
 {
     if (!file_cache_path_.endsWith("/"))
         file_cache_path_.append('/');
     worker_thread_ = new QThread;
+    cache_mgr_.open();
 }
 
 FileNetworkManager::~FileNetworkManager()
@@ -34,18 +36,18 @@ FileNetworkTask* FileNetworkManager::createDownloadTask(const QString &repo_id,
         file_cache_dir_.absoluteFilePath(repo_id + path + file_name));
 
     if (!oid.isEmpty()) {
-        FileNetworkTask *associated_task;
-        if (cached_tasks_.contains(oid) &&
-            (associated_task = cached_tasks_[oid]) &&
-            associated_task->oid() == oid &&
-            associated_task->status() == SEAFILE_NETWORK_TASK_STATUS_FINISHED &&
-            QFileInfo(associated_task->fileLocation()).exists()) {
+        QString cached_location = cache_mgr_.get(oid);
+        if (!cached_location.isEmpty()) {
+            FileNetworkTask *ctask =
+                new FileNetworkTask(SEAFILE_NETWORK_TASK_DOWNLOAD, NULL, this,
+                                    repo_id, path, file_name, cached_location);
+            ctask->setParent(this);
             //TODO : duplicate task and copy file here
-            return associated_task;
+            return ctask;
         }
-        cached_tasks_.remove(oid);
     }
 
+    // then create a download task
     // attempt to remove conflicting file
     if (QFileInfo(file_location).isFile())
         QFile::remove(file_location);

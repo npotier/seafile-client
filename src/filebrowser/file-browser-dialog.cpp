@@ -47,7 +47,7 @@ FileBrowserDialog::FileBrowserDialog(const ServerRepo& repo, QWidget *parent)
     selected_dirent_ = NULL;
 
     const Account& account = seafApplet->accountManager()->currentAccount();
-    data_mgr_ = new DataManager(account);
+    data_mgr_ = new DataManager(account, repo);
     file_network_mgr_ = new FileNetworkManager(account);
     file_progress_dialog_ = new FileBrowserProgressDialog(this);
 
@@ -217,7 +217,7 @@ void FileBrowserDialog::onDirChanged(bool forcely)
 
     details_label_->setText(tr("Loading..."));
     stack_->setCurrentIndex(INDEX_LOADING_VIEW);
-    data_mgr_->getDirents(repo_.id, path_, forcely);
+    data_mgr_->getDirents(path_, forcely);
     path_line_edit_->setText(repo_id_and_path_.arg(path_));
 }
 
