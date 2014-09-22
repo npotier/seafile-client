@@ -57,17 +57,21 @@ void FileTableView::onItemDoubleClicked(const QModelIndex& index)
 
 void FileTableView::setMouseOver(const int row)
 {
+    /*
     FileTableModel *_model = static_cast<FileTableModel*>(model());
 
     _model->setMouseOver(row);
+    */
 }
 
 void FileTableView::leaveEvent(QEvent *event)
 {
+    /*
     if (event->type() == QEvent::Leave) {
         FileTableModel *_model = static_cast<FileTableModel*>(model());
         _model->setMouseOver(-1);
     }
+    */
     QTableView::leaveEvent(event);
 }
 
