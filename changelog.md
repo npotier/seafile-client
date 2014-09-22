@@ -2,6 +2,14 @@
 
 ## DEVELOPMENT
 
+#### 20140922
+* add persisent cache support for file
+* fix drag and drop behaviour
+
+#### 20140920
+* fix segmentfault issue when cancelling
+* multiple small fixes
+
 #### 20140916
 * continue 20140915 work, and bring more ui tweaks
 * upload fix the behaviour when finished
